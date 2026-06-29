@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>🛠 脚本工坊 · 无我即我 · V3复合型</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a28;
+  --border:#2a2a40;--border2:#3a3a55;
+  --text:#e8e8f0;--text2:#8888a0;--text3:#5a5a70;
+  --accent:#7c5cfc;--accent2:#a78bfa;
+  --accent-dim:rgba(124,92,252,0.12);
+  --gold:#f59e0b;--green:#10b981;--red:#ef4444;
+  --radius:10px;--radius-sm:6px;
+}
+body{
+  font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+}
+
+/* 顶部 */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,10,15,0.92);backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:12px 16px 8px;
+}
+.topbar .logo{font-size:16px;font-weight:700;letter-spacing:-0.3px;}
+.topbar .logo span{color:var(--accent);}
+.topbar .sub{font-size:11px;color:var(--text2);margin-top:1px;}
+
+/* 数控系统 — 画龙点睛 */
+.cnc-panel{background:linear-gradient(135deg,rgba(245,158,11,0.06),rgba(124,92,252,0.06));border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius);margin:8px 16px;overflow:hidden;}
+.cnc-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--gold);user-select:none;}
+.cnc-body{padding:0 14px 14px;font-size:13px;line-height:1.7;}
+.cnc-step{display:flex;gap:10px;margin-bottom:12px;}
+.cnc-step:last-child{margin-bottom:0;}
+.cnc-num{width:24px;height:24px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.cnc-q{font-weight:600;color:var(--text);margin-bottom:2px;font-size:13px;}
+.cnc-a{color:var(--text2);font-size:12px;}
+.cnc-footer{font-size:11px;color:var(--text3);font-style:italic;margin-top:10px;padding-top:8px;border-top:1px solid rgba(245,158,11,0.1);}
+.cnc-tag{display:inline-block;font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(245,158,11,0.15);color:var(--gold);margin-left:6px;font-weight:400;}
+
+/* Tab */
+.tabs{
+  display:flex;gap:0;margin-top:10px;
+  background:var(--surface);border-radius:8px;padding:3px;
+  border:1px solid var(--border);
+}
+.tab{
+  flex:1;padding:8px 4px;text-align:center;
+  background:transparent;border:none;color:var(--text2);
+  font-size:12px;font-weight:500;cursor:pointer;
+  border-radius:6px;transition:all 0.2s;
+}
+.tab .tab-icon{display:block;font-size:16px;margin-bottom:1px;}
+.tab.active{background:var(--accent);color:#fff;}
+.tab:not(.active):active{background:var(--surface2);}
+
+/* 面板 */
+.panel{display:none;padding:12px 16px 100px;animation:fadeIn 0.2s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* 分类按钮 */
+.cat-bar{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none;}
+.cat-bar::-webkit-scrollbar{display:none;}
+.cat-btn{
+  flex-shrink:0;padding:6px 14px;border-radius:16px;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text2);font-size:12px;cursor:pointer;transition:all 0.15s;
+  white-space:nowrap;
+}
+.cat-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent2);}
+.cat-btn:active{transform:scale(0.96);}
+
+/* 钩子列表 */
+.hook-list{display:flex;flex-direction:column;gap:8px;}
+.hook-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px 16px;
+  cursor:pointer;transition:all 0.15s;position:relative;
+}
+.hook-item:active{transform:scale(0.98);border-color:var(--accent);}
+.hook-item .hook-text{font-size:14px;line-height:1.6;}
+.hook-item .hook-tag{
+  display:inline-block;font-size:10px;padding:1px 8px;
+  border-radius:10px;background:var(--accent-dim);color:var(--accent2);margin-bottom:6px;font-weight:500;
+}
+.hook-item .copy-badge{
+  position:absolute;top:10px;right:12px;font-size:10px;color:var(--text3);
+}
+.search-box{display:flex;gap:8px;margin-bottom:12px;}
+.search-box input{
+  flex:1;padding:10px 14px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);font-size:14px;outline:none;font-family:inherit;
+}
+.search-box input:focus{border-color:var(--accent);}
+.search-box input::placeholder{color:var(--text3);}
+
+/* ===== 生成器 ===== */
+.gen-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-bottom:12px;
+}
+.gen-card h3{font-size:14px;font-weight:600;margin-bottom:8px;color:var(--text2);}
+.gen-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.gen-opt{
+  padding:8px 16px;border-radius:8px;border:1px solid var(--border);
+  background:transparent;color:var(--text2);font-size:13px;
+  cursor:pointer;transition:all 0.15s;font-family:inherit;
+}
+.gen-opt.active{border-color:var(--accent);background:var(--accent-dim);color:var(--accent2);}
+.gen-opt:active{transform:scale(0.96);}
+.gen-btn{
+  width:100%;padding:14px;background:var(--accent);color:#fff;
+  border:none;border-radius:8px;font-size:15px;font-weight:600;
+  cursor:pointer;transition:all 0.15s;font-family:inherit;
+}
+.gen-btn:active{transform:scale(0.97);background:var(--accent2);}
+.gen-output{
+  display:none;margin-top:16px;
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;
+  white-space:pre-wrap;font-size:13px;line-height:1.8;
+}
+.gen-output.show{display:block;animation:fadeIn 0.25s;}
+.gen-output .olabel{
+  font-size:11px;color:var(--text3);margin-bottom:8px;
+  display:flex;justify-content:space-between;
+}
+.gen-output .olabel .cpy{color:var(--green);font-weight:500;}
+
+/* 公式 */
+.formula-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-bottom:12px;
+}
+.formula-card h3{font-size:15px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.formula-card .sub{font-size:12px;color:var(--text2);margin-bottom:12px;}
+.formula-steps{list-style:none;padding:0;}
+.formula-steps li{
+  padding:8px 0;border-bottom:1px solid var(--border);
+  font-size:13px;line-height:1.5;display:flex;gap:8px;
+}
+.formula-steps li:last-child{border-bottom:none;}
+.formula-steps .step-num{
+  flex-shrink:0;width:20px;height:20px;border-radius:50%;
+  background:var(--accent-dim);color:var(--accent2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;margin-top:1px;
+}
+.example-box{
+  margin-top:10px;padding:12px;background:var(--surface2);
+  border-radius:var(--radius-sm);font-size:12px;line-height:1.7;
+  color:var(--text2);border:1px dashed var(--border);cursor:pointer;
+}
+.example-box pre{font-family:inherit;white-space:pre-wrap;margin:0;font-size:12px;line-height:1.6;}
+
+/* 金句 */
+.quote-item{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-bottom:8px;
+  cursor:pointer;transition:all 0.15s;position:relative;
+}
+.quote-item:active{transform:scale(0.98);border-color:var(--gold);}
+.quote-item .quote-text{font-size:14px;line-height:1.7;font-style:italic;}
+.quote-item .quote-source{font-size:11px;color:var(--text2);margin-top:6px;}
+.quote-item .copy-badge{position:absolute;top:12px;right:12px;font-size:10px;color:var(--text3);}
+.quote-list{display:flex;flex-direction:column;gap:0;}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:100px;left:50%;transform:translateX(-50%);
+  background:var(--surface2);border:1px solid var(--border2);
+  padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;
+  box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:999;
+  opacity:0;transition:opacity 0.25s;pointer-events:none;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+.toast.show{opacity:1;}
+
+/* 底部 */
+.footer{
+  text-align:center;color:var(--text3);font-size:11px;
+  padding:20px 16px 32px;border-top:1px solid var(--border);margin-top:8px;
+}
+.footer b{color:var(--text2);}
+
+@media(min-width:600px){
+  body{padding:0 40px;max-width:1200px;margin:0 auto;font-size:16px;}
+  .hook-item .hook-text{font-size:15px;}
+  .gen-opt{font-size:15px;padding:10px 20px;}
+  .gen-card h3{font-size:16px;}
+  .formula-card h3{font-size:17px;}
+  .formula-steps li{font-size:15px;}
+  .quote-item .quote-text{font-size:15px;}
+  .cat-btn{font-size:14px;padding:8px 18px;}
+}
+/* 解锁层 */
+.lock-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,15,0.85);backdrop-filter:blur(8px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.lock-box{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:28px 24px;max-width:400px;width:100%;text-align:center;animation:fadeIn 0.3s;}
+.lock-box .icon{font-size:48px;margin-bottom:12px;}
+.lock-box h2{font-size:20px;font-weight:700;margin-bottom:6px;}
+.lock-box .sub{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5;}
+.lock-box input{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;text-align:center;outline:none;font-family:inherit;margin-bottom:12px;letter-spacing:4px;}
+.lock-box input:focus{border-color:var(--accent);}
+.lock-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+.lock-btn:active{transform:scale(0.97);}
+.lock-btn2{width:100%;padding:10px;background:transparent;color:var(--text3);border:none;font-size:12px;cursor:pointer;font-family:inherit;margin-top:8px;}
+.lock-badge{display:inline-block;font-size:10px;padding:2px 10px;border-radius:10px;background:var(--gold);color:#000;font-weight:600;margin-bottom:4px;}
+.unlocked .lock-overlay{display:none!important;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">🛠 <span>自媒体</span>万能工具箱</div>
+  <div class="sub">无我即我 · 你的真实经历 + 老张的配方 = 属于你的好脚本</div>
+  <div style="font-size:10px;color:var(--accent2);background:var(--accent-dim);display:inline-block;padding:1px 8px;border-radius:8px;margin-top:3px;">🔖 复合型 — 你的故事+老张配方=专属脚本 · 型号V3</div>
+</div>
+
+<!-- ⚙️ 数控系统 · 画龙点睛 -->
+<div class="cnc-panel" id="cncPanel">
+  <div class="cnc-header" onclick="toggleCnc()">
+    <span>🎯 拍之前先想清楚这三件事 <span class="cnc-tag">数控引导</span></span>
+    <span id="cncToggle">▼</span>
+  </div>
+  <div class="cnc-body" id="cncBody">
+    <div class="cnc-step">
+      <div class="cnc-num">1</div>
+      <div class="cnc-content">
+        <div class="cnc-q">这条视频拍给谁的？</div>
+        <div class="cnc-a">越具体越好。不是"年轻人"，是"刚工作3年、想搞副业但不知道从哪下手的你"。</div>
+      </div>
+    </div>
+    <div class="cnc-step">
+      <div class="cnc-num">2</div>
+      <div class="cnc-content">
+        <div class="cnc-q">能帮他解决什么问题？</div>
+        <div class="cnc-a">不是"讲个道理"，是"你看完就能用"。他看完这条视频，手上能多一把什么铲子？</div>
+      </div>
+    </div>
+    <div class="cnc-step">
+      <div class="cnc-num">3</div>
+      <div class="cnc-content">
+        <div class="cnc-q">怎么讲他愿意听？</div>
+        <div class="cnc-a">用他的语言、说他的事、用故事代替说教、用真实代替正确。不是"我教你"，是"我试过，你也行"。</div>
+      </div>
+    </div>
+    <div class="cnc-footer">💡 这三个问题想清楚了，再用下面的工具。工具只是帮你把答案做出来。技术不是灵魂，价值才是。</div>
+  </div>
+</div>
+
+<div class="tabs">
+    <button class="tab active" data-panel="gen"><span class="tab-icon">🤖</span>一键生成</button>
+    <button class="tab" data-panel="hooks"><span class="tab-icon">🎣</span>钩子库</button>
+    <button class="tab" data-panel="formulas"><span class="tab-icon">📜</span>脚本公式</button>
+    <button class="tab" data-panel="quotes"><span class="tab-icon">💎</span>金句库</button>
+  </div>
+</div>
+
+<!-- ====== 一键生成 ====== -->
+<div class="panel active" id="panel-gen">
+
+  <!-- 步骤条 -->
+  <div style="display:flex;gap:6px;margin-bottom:16px;font-size:11px;color:var(--text3);">
+    <span style="background:var(--accent-dim);color:var(--accent2);padding:3px 10px;border-radius:10px;">①选风格</span>
+    <span style="color:var(--text3);">→</span>
+    <span style="color:var(--text3);padding:3px 10px;">②选公式</span>
+    <span style="color:var(--text3);">→</span>
+    <span style="color:var(--text3);padding:3px 10px;">③填你的故事</span>
+    <span style="color:var(--text3);">→</span>
+    <span style="color:var(--text2);padding:3px 10px;">📋出脚本</span>
+  </div>
+
+  <!-- 步骤1: 选钩子风格 + 看示例 -->
+  <div class="gen-card">
+    <h3>🎣 第一步：选开头风格 <span style="font-weight:400;color:var(--text3);font-size:12px;">（点一下看看老张的示例）</span></h3>
+    <div class="gen-row" id="selHook">
+      <button class="gen-opt active" data-val="suspense">🎯 悬念</button>
+      <button class="gen-opt" data-val="pain">💢 痛点</button>
+      <button class="gen-opt" data-val="contrarian">🔄 反常识</button>
+      <button class="gen-opt" data-val="story">📖 故事</button>
+    </div>
+    <div id="hookDemo" style="font-size:12px;color:var(--text2);background:var(--surface2);padding:10px 12px;border-radius:6px;margin-top:4px;line-height:1.6;border:1px dashed var(--border);">
+      💡 示例：我见过最厉害的一个散户，他的方法你想都想不到。
+    </div>
+  </div>
+
+  <!-- 步骤2: 选公式 -->
+  <div class="gen-card">
+    <h3>📜 第二步：选脚本结构 <span style="font-weight:400;color:var(--text3);font-size:12px;">（看看公式长啥样）</span></h3>
+    <div class="gen-row" id="selFormula">
+      <button class="gen-opt active" data-val="golden">⭐ 黄金公式</button>
+      <button class="gen-opt" data-val="question">❓ 问题前置</button>
+      <button class="gen-opt" data-val="story-f">📖 故事型</button>
+    </div>
+    <div id="formulaDemo" style="font-size:12px;color:var(--text2);background:var(--surface2);padding:10px 12px;border-radius:6px;margin-top:4px;line-height:1.6;border:1px dashed var(--border);">
+      ①钩子句 → ②讲痛点 → ③给方法 → ④金句 → ⑤互动
+    </div>
+  </div>
+
+  <!-- 步骤3: 填你的真实内容 -->
+  <div class="gen-card" style="border-color:var(--accent);">
+    <h3>✍️ 第三步：填入你的真实经历 <span style="color:var(--green);font-size:12px;font-weight:400;">（这是脚本的灵魂）</span></h3>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px;">
+      你的真实故事，比AI编的任何内容都值钱。写口语，不用写得多好。
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px;">📖 你的故事/经历（1-3句话）</label>
+      <textarea id="userStory" placeholder="例：我刚工作那会儿，跟同事吃饭，明明兜里没多少钱，但大家都看着我，我就抢着把单买了…" style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;line-height:1.6;min-height:70px;outline:none;font-family:inherit;resize:vertical;"></textarea>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px;">💡 你从这个经历中学到了什么？（一句话）</label>
+      <input id="userLesson" type="text" placeholder="例：面子是世界上最贵的消费" style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none;font-family:inherit;">
+    </div>
+    <div>
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:4px;">🔧 你试过什么方法/工具？（可选）</label>
+      <input id="userTool" type="text" placeholder="例：后来我给自己定了个规矩：面子成本核算单" style="width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none;font-family:inherit;">
+    </div>
+  </div>
+
+  <!-- 生成按钮 -->
+  <button class="gen-btn" onclick="generateScript()">🚀 合成我的脚本</button>
+
+  <!-- 输出 -->
+  <div class="gen-output" id="genOutput">
+    <div class="olabel"><span>📋 你的专属脚本</span><span class="cpy">👇 点我复制</span></div>
+    <div id="genContent"></div>
+  </div>
+</div>
+
+<!-- ====== 钩子库 ====== -->
+<div class="panel" id="panel-hooks">
+  <div class="search-box"><input id="hookSearch" type="text" placeholder="🔍 搜钩子…" oninput="filterHooks()"></div>
+  <div class="cat-bar" id="hookCats"></div>
+  <div class="hook-list" id="hookList"></div>
+</div>
+
+<!-- ====== 脚本公式 ====== -->
+<div class="panel" id="panel-formulas">
+  <div id="formulaList"></div>
+</div>
+
+<!-- ====== 金句库 ====== -->
+<div class="panel" id="panel-quotes">
+  <div class="search-box"><input id="quoteSearch" type="text" placeholder="🔍 搜金句…" oninput="filterQuotes()"></div>
+  <div class="cat-bar" id="quoteCats"></div>
+  <div class="quote-list" id="quoteList"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 解锁弹窗 -->
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-box">
+    <div class="icon">🔒</div>
+    <div class="lock-badge">免费预览版</div>
+    <h2>体验基础功能</h2>
+    <div class="sub">
+      这是免费版，可体验基础脚本合成<br>
+      ⭐ 加入星球解锁完整版 <strong>200+钩子+全部模板+持续更新</strong>
+    </div>
+    <input id="unlockInput" type="password" maxlength="8" placeholder="输入星球密码" autocomplete="off">
+    <button class="lock-btn" onclick="tryUnlock()">解锁完整版</button>
+    <button class="lock-btn2" onclick="skipLock()">先看看免费版</button>
+    <div style="margin-top:12px;font-size:11px;color:var(--text3);">已加入星球？密码在置顶帖里</div>
+  </div>
+</div>
+
+<div class="footer"><b>无我即我</b> · X系统出品 · 型号V3 复合型</div>
+
+<script>
+// ====== 数据 ======
+const CATS=[
+  {id:'suspense',name:'悬念型',icon:'🎯'},
+  {id:'pain',name:'痛点型',icon:'💢'},
+  {id:'contrarian',name:'反常识型',icon:'🔄'},
+  {id:'story',name:'故事型',icon:'📖'},
+  {id:'self',name:'自曝型',icon:'😅'},
+  {id:'data',name:'数据型',icon:'📊'},
+  {id:'heart',name:'扎心型',icon:'💔'},
+  {id:'benefit',name:'利益型',icon:'💰'},
+  {id:'interact',name:'互动型',icon:'✋'},
+  {id:'compare',name:'对比型',icon:'⚖️'},
+];
+const HOOKS=[
+  {cat:'suspense',text:'我见过最厉害的一个散户，他的方法你想都想不到。'},
+  {cat:'suspense',text:'你知道为什么特种兵戴手表，表盘要朝手心里吗？'},
+  {cat:'suspense',text:'这件事我憋了三年，今天终于敢说了。'},
+  {cat:'suspense',text:'我花了6年亏了49万，才搞清楚一件事。'},
+  {cat:'suspense',text:'你绝对想不到，真正厉害的人，手机里从来不装这个APP。'},
+  {cat:'suspense',text:'昨天我做了一个决定，把跟我合作了5年的供应商换了。'},
+  {cat:'suspense',text:'上周三收盘后，一个粉丝给我发了条私信，就一句话。'},
+  {cat:'suspense',text:'有个方法让我一个月多赚了3倍，但我不敢告诉同行。'},
+  {cat:'suspense',text:'如果你现在刷到这条视频，说明你该听听下面这段话了。'},
+  {cat:'pain',text:'你有没有发现，越努力的人反而越穷？'},
+  {cat:'pain',text:'你是不是也这样——每天忙得要死，月底一看啥也没干成。'},
+  {cat:'pain',text:'你试过多少次想早起，结果按掉闹钟继续睡？'},
+  {cat:'pain',text:'最气人的是什么？你明明知道该怎么做，就是做不到。'},
+  {cat:'pain',text:'你有没有过这种时候——跟人聊完天，感觉整个人被抽干了？'},
+  {cat:'pain',text:'你是不是特别在意别人怎么看你？'},
+  {cat:'pain',text:'你有没有为了面子干过后悔的事？'},
+  {cat:'pain',text:'每次想学点新东西，坚持了三天就放弃了？'},
+  {cat:'pain',text:'说句扎心的——你那么努力，为什么老板还是不重用你？'},
+  {cat:'contrarian',text:'你以为自律是靠意志力？错了，自律是靠系统。'},
+  {cat:'contrarian',text:'越聪明的人，越容易亏大钱。'},
+  {cat:'contrarian',text:'对人友善不一定会被尊重，有底线才会。'},
+  {cat:'contrarian',text:'执行力强的人，往往不是最勤奋的，而是最懒的。'},
+  {cat:'contrarian',text:'你越急着回本的时候，亏得越惨。'},
+  {cat:'contrarian',text:'你最大的敌人不是能力不够，是怕丢人。'},
+  {cat:'contrarian',text:'不是所有坚持都值得，有时候放弃才是对的。'},
+  {cat:'story',text:'我刚工作那会儿，被老板当众训哭过。'},
+  {cat:'story',text:'那年我排队买相机，排了一整夜，到我的时候卖完了。'},
+  {cat:'story',text:'我被骗了70万，因为对方太像"成功人士"了。'},
+  {cat:'story',text:'那年我在日本工厂实习，食堂里几个日本人当着我面换台。'},
+  {cat:'story',text:'我儿子早上跑过来跟我说：爸爸，特种兵手表反过来戴。'},
+  {cat:'story',text:'我认识一个朋友，他用了三年时间，从负债50万到存款100万。'},
+  {cat:'story',text:'14年前我进了一家小工厂，当时谁都看不起，现在我还在。'},
+];
+
+// === 生成器内容库 ===
+const TOPIC_DATA={
+  invest:{
+    name:'投资',
+    pains:[
+      '你是不是也觉得，炒股亏钱不是因为技术不行，是没有系统？',
+      '你有没有过这种经历——明明看好了，一买就跌，一卖就涨？',
+      '最气人的是什么？你辛辛苦苦研究半天，还不如人家随便买一只赚得多。',
+    ],
+    cores:[
+      '我花了7年时间，亏了150万，才明白一个道理：你不是输给了市场，是输给了自己的情绪。',
+      '后来我给自己定了个规矩——每次买入之前，先想好怎么卖。没有卖出计划，就不买。就这一条，帮我少亏了至少一半。',
+      '我建了一套系统，40版宪法，300支股票回测。不是因为我聪明，是因为我亏怕了。',
+    ],
+    tools:[
+      '给你一个工具：交易三问。① 这笔交易符合你的系统吗？② 止损设在哪？③ 如果明天跌停，你扛得住吗？三问问完，80%的冲动交易就过滤掉了。',
+      '试试这个方法：每次想做交易决策之前，先写下来——买入理由、止损位、预期收益。写完再看一遍，你会发现一半以上的交易都不该做。',
+    ],
+    closings:[
+      '运气赚的钱，最终会凭实力亏回去。建系统，才是唯一的路。',
+      '没有人是等准备好了才出发的，你是在路上才变强的。',
+    ]
+  },
+  work:{
+    name:'职场',
+    pains:[
+      '你是不是也觉得，自己干得最多，升职的却是别人？',
+      '你有没有过这种时候——明明有理，却说不过人家？',
+      '最让人憋屈的是什么？你认真做事，别人靠关系上去了。',
+    ],
+    cores:[
+      '我在工厂干了17年，从最底层的质检干到主管。我发现一个规律：老板最怕的不是你摸鱼，是你太听话。',
+      '你以为努力工作就能升职？错了。你得让你的工作被看见。不是邀功，是让你的价值变得不可替代。',
+      '我见过最牛的一个车间主任，初中毕业，管着20个大学生。凭什么？凭他手里有真本事。',
+    ],
+    tools:[
+      '给你一个工具：不可替代性三问。① 这件事除了你还有谁能做？② 你走了公司要花多久才能找到人替代？③ 你现在做的事，三年后还有价值吗？答案越短，你越危险。',
+      '试试这个方法：每个月做一件事——学一个你现在不会但工作需要的能力。一年后你会发现，你已经不是原来的你了。',
+    ],
+    closings:[
+      '做技术就要较真。不糊弄，不敷衍。这是你最大的护城河。',
+      '有力使力，无力使智。不蛮干，使巧劲。',
+    ]
+  },
+  growth:{
+    name:'成长',
+    pains:[
+      '你有没有发现，你年初定的目标，到现在一个都没完成？',
+      '你是不是也这样——买了很多课，一本都没看完？',
+      '最让人沮丧的是什么？你明明知道该怎么做，就是做不到。',
+    ],
+    cores:[
+      '我以前也这样，定了无数计划，一个都没坚持下来。后来我发现，问题不是我懒，是我的方法错了。',
+      '自律不是靠意志力，是靠系统。意志力是消耗品，用一点少一点。系统是自动运行的，不需要消耗意志力。',
+      '我给自己定了一个规矩：每天只做三件事。做完就停，不做多。听起来慢，但一年下来，比天天瞎忙的人多做了不少事。',
+    ],
+    tools:[
+      '给你一个工具：三件事法则。每天早上列出今天最重要的三件事，按顺序做。做完一件画一个✓。不做完不睡觉。就这一个习惯，坚持三个月，你会发现自己的效率翻倍。',
+      '试试这个方法：把你想养成的习惯，绑定到一个已有的习惯上。比如"每天刷完牙，就写50个字"。绑定三个月，自然就习惯了。',
+    ],
+    closings:[
+      '每天做一点，长期了不起。不是鸡汤，是复利。',
+      '完美没有结束，永远都在进步。我们是在追求完美的路上。',
+    ]
+  },
+  people:{
+    name:'人际',
+    pains:[
+      '你是不是也有过——明明是好心帮忙，最后却里外不是人？',
+      '你有没有为了合群，做过自己不想做的事？',
+      '最让人心累的是什么？你掏心掏肺对别人，人家转头就把你忘了。',
+    ],
+    cores:[
+      '我以前总觉得，对人好别人就会对你好。后来发现，不是这样的。没有边界的好，只会让人觉得理所当然。',
+      '我在工厂管人的时候发现一个规律：你越想让所有人都满意，最后谁都不满意。带团队是这样，交朋友也是这样。',
+      '真正的朋友不是天天联系，是不联系也不尴尬。你身边有几个这样的人？',
+    ],
+    tools:[
+      '给你一个工具：边界三问。① 这件事是我的责任吗？② 我帮了这个忙，下次他还会找我吗？③ 如果我拒绝，最坏的结果是什么？三问问完，你就知道该不该帮了。',
+      '试试这个方法：把你微信通讯录翻一遍，找出那些一年以上没联系、但有事就找你的——想想你跟他们的关系是不是该调整了。',
+    ],
+    closings:[
+      '善良要有牙齿，信任要有边界。',
+      '人不需要很多朋友，有几个真心的就够了。',
+    ]
+  },
+  life:{
+    name:'生活观察',
+    pains:[
+      '你有没有过这种时候——忙了一天，躺下来一想，不知道自己忙了什么？',
+      '你是不是也常常觉得，日子过得没滋没味的？',
+      '你有没有发现，越想要的东西，得到之后越觉得没意思？',
+    ],
+    cores:[
+      '我儿子早上跟我说：爸爸，特种兵的手表是反过来戴的。我问为什么？他说因为真正的信息是给自己看的，不是给别人看的。一个小孩从游戏里悟出的道理，比很多大人活得明白。',
+      '人这一辈子就是在玩。小孩在玩，大人也在玩。区别在于，你玩出了什么花样？',
+      '我做了17年质量工程师，养成了一个习惯——较真。工作较真，投资较真，写东西较真。后来发现，较真的人活得累，但活得明白。',
+    ],
+    tools:[
+      '给你一个工具：表盘方向测试。做任何事之前问自己——这件事我是做给别人看的，还是做给自己用的？答案会让你少走很多弯路。',
+      '试试这个方法：每天睡前花5分钟，写下今天最有意思的一个发现。不要多，就一个。坚持一个月，你会发现自己的观察力完全不一样了。',
+    ],
+    closings:[
+      '你不是忙，你是在假装努力骗自己。',
+      '面子是世界上最贵的消费，没有之一。',
+    ]
+  }
+};
+
+// ====== 状态 ======
+let currentHookCat='suspense';
+let currentQuoteCat='invest';
+
+// ====== 数控系统 折叠 ======
+function toggleCnc(){
+  const body=document.getElementById('cncBody');
+  const toggle=document.getElementById('cncToggle');
+  if(body.style.display==='none'||!body.style.display){
+    body.style.display='none';toggle.textContent='▶';
+  }else{
+    body.style.display='';toggle.textContent='▼';
+  }
+}
+
+// === 解锁系统 ===
+var UNLOCK_PWD = "WJJW99";
+function checkUnlock(){
+  try{var u = localStorage.getItem('toolbox_unlocked');
+  if(u === '1'){document.body.classList.add('unlocked');}
+  }catch(e){}
+}
+function tryUnlock(){
+  try{
+    var inp = document.getElementById('unlockInput').value.trim();
+    if(inp === UNLOCK_PWD){
+      document.body.classList.add('unlocked');
+      localStorage.setItem('toolbox_unlocked','1');
+      showToast('解锁成功！');
+    }else{showToast('密码错误');document.getElementById('unlockInput').value='';}
+  }catch(e){showToast('页面错误请刷新');}
+}
+function skipLock(){
+  document.getElementById('lockOverlay').style.display='none';
+  showToast('免费版浏览中');
+}
+checkUnlock();
+
+// ====== Toast ======
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1500);
+}
+
+// ====== Tab切换 ======
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.panel).classList.add('active');
+  });
+});
+
+// ====== 钩子预览联动 ======
+const HOOK_EXAMPLES={
+  suspense:{text:'我见过最厉害的一个散户，他的方法你想都想不到。',tip:'制造悬念，让人想听下去'},
+  pain:{text:'你有没有发现，越努力的人反而越穷？',tip:'戳中大多数人的共同痛点'},
+  contrarian:{text:'你以为自律是靠意志力？错了，自律是靠系统。',tip:'打破认知，让人好奇'},
+  story:{text:'我刚工作那会儿，被老板当众训哭过。',tip:'真实故事开头，有画面感'},
+};
+
+const FORMULA_EXAMPLES={
+  golden:{text:'①钩子句 → ②讲痛点 → ③给方法(3步) → ④金句 → ⑤互动',tip:'万能模板，适合大多数口播'},
+  question:{text:'①直击问题 → ②我的故事 → ③悟到了什么 → ④给动作 → ⑤金句收尾',tip:'适合认知类内容'},
+  'story-f':{text:'①开场画面 → ②经过 → ③转折 → ④结果/启发 → ⑤送给观众',tip:'适合个人故事分享'},
+};
+
+// 钩子选项点击 → 显示示例
+document.querySelectorAll('#selHook .gen-opt').forEach(opt=>{
+  opt.addEventListener('click',()=>{
+    document.querySelectorAll('#selHook .gen-opt').forEach(o=>o.classList.remove('active'));
+    opt.classList.add('active');
+    const demo=document.getElementById('hookDemo');
+    const ex=HOOK_EXAMPLES[opt.dataset.val];
+    if(ex) demo.innerHTML=`💡 ${ex.text}<br><span style="font-size:11px;color:var(--text3);">👉 ${ex.tip}</span>`;
+  });
+});
+
+// 公式选项点击 → 显示结构
+document.querySelectorAll('#selFormula .gen-opt').forEach(opt=>{
+  opt.addEventListener('click',()=>{
+    document.querySelectorAll('#selFormula .gen-opt').forEach(o=>o.classList.remove('active'));
+    opt.classList.add('active');
+    const demo=document.getElementById('formulaDemo');
+    const ex=FORMULA_EXAMPLES[opt.dataset.val];
+    if(ex) demo.innerHTML=`${ex.text}<br><span style="font-size:11px;color:var(--text3);">👉 ${ex.tip}</span>`;
+  });
+});
+
+// ====== 脚本生成 ======
+function generateScript(){
+  const hookType=document.querySelector('#selHook .gen-opt.active').dataset.val;
+  const formula=document.querySelector('#selFormula .gen-opt.active').dataset.val;
+  const userStory=document.getElementById('userStory').value.trim();
+  const userLesson=document.getElementById('userLesson').value.trim();
+  const userTool=document.getElementById('userTool').value.trim();
+
+  // 选一个匹配的钩子
+  const hookPool=HOOKS.filter(h=>h.cat===hookType);
+  const hook=hookPool.length>0
+    ? hookPool[Math.floor(Math.random()*hookPool.length)].text
+    : '你有没有过这样的经历？';
+
+  // 用户必须填故事
+  const story=userStory||'我来说说我的经历。';
+  const lesson=userLesson||'后来我明白了——有些道理，不亲身经历一次是真的不会懂的。';
+  const tool=userTool||'';
+
+  let script='';
+
+  if(formula==='golden'){
+    // 黄金公式：钩子 → 痛点 → 给方法 → 金句 → 互动
+    script=`🎣 ${hook}\n\n`;
+    script+=`💢 你是不是也有过这样的经历？\n${story}\n\n`;
+    if(tool) script+=`🔧 后来我试了一个方法：${tool}\n\n`;
+    script+=`💎 ${lesson}\n\n`;
+    script+=`📢 你呢？你有没有类似的经历？评论区聊聊。`;
+  }else if(formula==='question'){
+    // 问题前置：问题 → 我的故事 → 道理 → 动作 → 金句
+    script=`❓ ${hook}\n\n`;
+    script+=`📖 我来说说我自己。\n${story}\n\n`;
+    script+=`🧠 从这件事我悟到一个道理：${lesson}\n\n`;
+    if(tool) script+=`🔧 如果你也想试试：${tool}\n\n`;
+    script+=`💎 ${lesson}\n\n`;
+    script+=`📢 你遇到过这种情况吗？评论区告诉我。`;
+  }else{
+    // 故事型：开场 → 经过 → 转折 → 启发
+    script=`📖 说个事。\n${hook}\n\n`;
+    script+=`事情是这样的。\n${story}\n\n`;
+    if(tool) script+=`后来我试了一个方法，还挺管用——${tool}\n\n`;
+    script+=`💎 所以我想说的是：${lesson}\n\n`;
+    script+=`📢 你有没有类似的故事？评论区说说。`;
+  }
+
+  // 显示结果
+  const out=document.getElementById('genOutput');
+  const content=document.getElementById('genContent');
+  content.textContent=script;
+  out.classList.add('show');
+  out.style.cursor='pointer';
+  out.onclick=()=>{
+    navigator.clipboard.writeText(script).then(()=>showToast('✅ 完整脚本已复制'));
+  };
+  showToast('✨ 你的专属脚本已生成，点一下复制');
+}
+
+// ====== 钩子库 ======
+function renderHookCats(){
+  const c=document.getElementById('hookCats');c.innerHTML='';
+  CATS.forEach(cat=>{
+    const btn=document.createElement('button');
+    btn.className='cat-btn'+(cat.id===currentHookCat?' active':'');
+    btn.textContent=cat.icon+' '+cat.name;
+    btn.onclick=()=>{currentHookCat=cat.id;renderHookCats();renderHooks();};
+    c.appendChild(btn);
+  });
+}
+function renderHooks(){
+  const c=document.getElementById('hookList');
+  const s=document.getElementById('hookSearch').value.toLowerCase();
+  let items=HOOKS.filter(h=>h.cat===currentHookCat);
+  if(s) items=items.filter(h=>h.text.toLowerCase().includes(s));
+  c.innerHTML='';
+  items.forEach(h=>{
+    const div=document.createElement('div');div.className='hook-item';
+    div.innerHTML=`<span class="hook-tag">${CATS.find(c=>c.id===h.cat)?.name||''}</span>
+      <div class="hook-text">${h.text}</div><span class="copy-badge">📋</span>`;
+    div.onclick=()=>{
+      navigator.clipboard.writeText(h.text).then(()=>showToast('✅ 已复制'));
+    };
+    c.appendChild(div);
+  });
+  if(!items.length) c.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:14px;">没有匹配的钩子</div>';
+}
+function filterHooks(){renderHooks();}
+
+// ====== 公式 ======
+const FORMULAS=[
+  {name:'⭐ 黄金公式',desc:'万能模板，适合大多数口播场景',
+    steps:['钩子句：前3秒抓注意力','讲痛点：说出观众的困境','给方法：分三步走','金句收尾：一句让人收藏的话','互动引导：让观众评论'],
+    example:'🎣 你有没有发现，越努力的人反而越穷？\n💢 你是不是也觉得，每天忙得要死月底一看啥也没干成？\n🔧 分三步：①砍掉低价值的事 ②聚焦一件事做到极致 ③用系统代替意志力\n💎 不是努力没用，是在错误的地方努力。\n📢 你也有过这种经历吗？评论区聊聊。'},
+  {name:'❓ 问题前置',desc:'扎心问题开场，适合认知类',
+    steps:['直击问题：替观众问出来','我的故事：真实经历引起共鸣','悟到的道理：从经历中提炼','给动作：看完能做什么','金句收尾'],
+    example:'❓ 你有没有为了面子干过后悔的事？\n📖 我干过。刚工作那会儿抢着买单，半个月工资没了。\n🧠 后来我才明白，面子是世界上最贵的消费。\n🔧 下次觉得"不做没面子"时，问自己三个问题。\n💎 面子不是别人给的，是你自己放不下的。'},
+  {name:'🎯 悬念型',desc:'制造悬念让人想看到底',
+    steps:['悬念场景：只说现象不给答案','转折：出人意料的发展','揭晓真相：背后的原因','金句收尾：点题回味','互动引导'],
+    example:'🌀 上周三，一个粉丝给我发了条私信。\n🔄 他说他亏了70万，但我想跟他说的不是怎么亏的。\n🔍 他亏钱的原因不是不懂技术，是太相信别人了。\n💎 善良要有牙齿，信任要有边界。\n📢 你有过类似的经历吗？'},
+  {name:'📖 故事型',desc:'完整个人故事打动人',
+    steps:['开场：画面感','经过：发生了什么','转折：意想不到的变化','结果：学到了什么','启发：送给观众的道理'],
+    example:'那年我在日本工厂，几个日本人当着我面换台。\n我忍了很久，有一天烦了，把遥控拿过来盯着他们看。\n从那以后只要有我在，他们不敢换台。\n人的尊严是自己争取的。不是让你去打架，是用行动告诉对方：我有底线。'},
+];
+function renderFormulas(){
+  const c=document.getElementById('formulaList');c.innerHTML='';
+  FORMULAS.forEach(f=>{
+    const card=document.createElement('div');card.className='formula-card';
+    let stepsHtml='';
+    f.steps.forEach((s,i)=>{stepsHtml+=`<li><span class="step-num">${i+1}</span><span class="step-desc">${s}</span></li>`;});
+    card.innerHTML=`<h3>${f.name}</h3><div class="sub">${f.desc}</div>
+      <ul class="formula-steps">${stepsHtml}</ul>
+      <div class="example-box" onclick="copyExample(this)"><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">📋 点我复制示例</div>
+      <pre>${f.example}</pre></div>`;
+    c.appendChild(card);
+  });
+}
+function copyExample(el){
+  const t=el.querySelector('pre').textContent;
+  navigator.clipboard.writeText(t).then(()=>showToast('✅ 示例已复制'));
+}
+
+// ====== 金句 ======
+const QUOTE_CATS=[
+  {id:'invest',name:'投资',icon:'📈'},
+  {id:'growth',name:'成长',icon:'🌱'},
+  {id:'life',name:'人生',icon:'✨'},
+  {id:'action',name:'行动',icon:'⚡'},
+];
+const QUOTES=[
+  {cat:'invest',text:'把运气当能力，把侥幸当常态——我花了7年和150万才戒掉这两样东西。',source:'小张'},
+  {cat:'invest',text:'不怨天，不由人。亏了就是自己错了。',source:'小张'},
+  {cat:'invest',text:'运气赚的钱，最终会凭实力亏回去。',source:'小张'},
+  {cat:'invest',text:'没有人是等准备好了才出发的，你是在路上才变强的。',source:'小张'},
+  {cat:'invest',text:'止损不是认输，是给自己留一条活路。',source:'小张'},
+  {cat:'invest',text:'买入之前先想好怎么卖。',source:'交易铁律'},
+  {cat:'growth',text:'有力使力，无力使智。不蛮干，使巧劲。',source:'小张'},
+  {cat:'growth',text:'做技术就要较真。不糊弄，不敷衍。',source:'小张'},
+  {cat:'growth',text:'自律不是靠意志力，是靠系统。',source:'小张'},
+  {cat:'growth',text:'完美没有结束，永远都在进步。',source:'小张'},
+  {cat:'growth',text:'先完成，再完美。',source:'行动法则'},
+  {cat:'growth',text:'每天做一点，长期了不起。',source:'复利思维'},
+  {cat:'life',text:'面子是世界上最贵的消费，没有之一。',source:'小张'},
+  {cat:'life',text:'真正的信息，是给自己看的，不是给别人看的。',source:'小张'},
+  {cat:'life',text:'善良要有牙齿，信任要有边界。',source:'小张'},
+  {cat:'life',text:'你怕的不是失败，是别人看到你失败。',source:'小张'},
+  {cat:'life',text:'人这一生就是在玩，关键是你玩出了什么花样。',source:'小张'},
+  {cat:'life',text:'你不是忙，你是在假装努力骗自己。',source:'小张'},
+  {cat:'life',text:'面子是别人给的，里子是自己挣的。',source:'小张'},
+  {cat:'action',text:'三分钟后能做的事，现在就做。',source:'行动法则'},
+  {cat:'action',text:'每一次都是第一次，认真对待每一次。',source:'投资宪法'},
+  {cat:'action',text:'读完之后只是开始，用完之后才算读完。',source:'写作宪法'},
+  {cat:'action',text:'先完成再完美，做出来比想清楚更重要。',source:'小张'},
+];
+function renderQuoteCats(){
+  const c=document.getElementById('quoteCats');c.innerHTML='';
+  QUOTE_CATS.forEach(qc=>{
+    const btn=document.createElement('button');
+    btn.className='cat-btn'+(qc.id===currentQuoteCat?' active':'');
+    btn.textContent=qc.icon+' '+qc.name;
+    btn.onclick=()=>{currentQuoteCat=qc.id;renderQuoteCats();renderQuotes();};
+    c.appendChild(btn);
+  });
+}
+function renderQuotes(){
+  const c=document.getElementById('quoteList');
+  const s=document.getElementById('quoteSearch').value.toLowerCase();
+  let items=QUOTES.filter(q=>q.cat===currentQuoteCat);
+  if(s) items=items.filter(q=>q.text.toLowerCase().includes(s));
+  c.innerHTML='';
+  items.forEach(q=>{
+    const div=document.createElement('div');div.className='quote-item';
+    div.innerHTML=`<div class="quote-text">"${q.text}"</div><div class="quote-source">— ${q.source}</div><span class="copy-badge">📋</span>`;
+    div.onclick=()=>{
+      navigator.clipboard.writeText('"'+q.text+'" — '+q.source).then(()=>showToast('✅ 金句已复制'));
+    };
+    c.appendChild(div);
+  });
+  if(!items.length) c.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:14px;">没有匹配的金句</div>';
+}
+function filterQuotes(){renderQuotes();}
+
+// ====== 启动 ======
+renderHookCats();renderHooks();renderFormulas();renderQuoteCats();renderQuotes();
+</script>
+</body>
+</html>
