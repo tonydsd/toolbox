@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>🎯 定位诊断 · 无我即我</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a28;--border:#2a2a40;--border2:#3a3a55;--text:#e8e8f0;--text2:#8888a0;--text3:#5a5a70;--accent:#7c5cfc;--accent2:#a78bfa;--accent-dim:rgba(124,92,252,0.12);--gold:#f59e0b;--green:#10b981;--radius:12px;--radius-sm:6px;}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+.topbar{background:rgba(10,10,15,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 16px 10px;text-align:center;}
+.topbar .logo{font-size:18px;font-weight:700;}.topbar .logo span{color:var(--accent);}
+.topbar .sub{font-size:12px;color:var(--text2);margin-top:2px;}
+.page{flex:1;padding:16px;max-width:700px;margin:0 auto;width:100%;}
+
+/* 进度条 */
+.progress{display:flex;gap:6px;margin-bottom:24px;}
+.prog-dot{flex:1;height:4px;border-radius:2px;background:var(--border);transition:background 0.3s;}
+.prog-dot.done{background:var(--accent);}
+.prog-dot.current{background:var(--accent2);}
+
+/* 卡片 */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.card .step-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.card h2{font-size:18px;font-weight:700;margin-bottom:4px;line-height:1.4;}
+.card .hint{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5;}
+.card .hint2{font-size:12px;color:var(--text3);margin-top:10px;font-style:italic;}
+
+/* 选项 */
+.options{display:flex;flex-direction:column;gap:8px;}
+.opt{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s;}
+.opt:hover{border-color:var(--accent);}
+.opt:active{transform:scale(0.98);}
+.opt.selected{border-color:var(--accent);background:var(--accent-dim);}
+.opt .icon{font-size:20px;flex-shrink:0;margin-top:1px;}
+.opt .text{flex:1;}
+.opt .text .title{font-weight:600;font-size:14px;margin-bottom:2px;}
+.opt .text .desc{font-size:12px;color:var(--text2);line-height:1.4;}
+
+/* 输入 */
+.input-group{margin-bottom:16px;}
+.input-group label{display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500;}
+.input-group input,.input-group textarea{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;outline:none;font-family:inherit;}
+.input-group input:focus,.input-group textarea:focus{border-color:var(--accent);}
+
+/* 按钮 */
+.btn-row{display:flex;gap:10px;margin-top:8px;}
+.btn{flex:1;padding:14px;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:inherit;}
+.btn-primary{background:var(--accent);color:#fff;}
+.btn-primary:active{transform:scale(0.97);background:var(--accent2);}
+.btn-primary:disabled{opacity:0.4;cursor:not-allowed;}
+.btn-secondary{background:var(--surface2);color:var(--text2);border:1px solid var(--border);}
+.btn-secondary:active{transform:scale(0.97);}
+
+/* 结果卡 */
+.result-card{background:linear-gradient(135deg,rgba(124,92,252,0.1),rgba(245,158,11,0.1));border:1px solid rgba(124,92,252,0.2);border-radius:var(--radius);padding:24px;text-align:center;margin-bottom:20px;animation:fadeIn 0.4s ease;}
+.result-card .big-icon{font-size:48px;margin-bottom:12px;}
+.result-card h2{font-size:20px;font-weight:700;margin-bottom:6px;}
+.result-card .tagline{font-size:14px;color:var(--accent2);margin-bottom:16px;font-style:italic;}
+.result-card .position-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin:12px 0;text-align:left;font-size:14px;line-height:1.7;}
+.result-card .position-box .label{font-size:11px;color:var(--text3);margin-bottom:4px;}
+.result-card .rec{font-size:13px;color:var(--gold);margin-top:12px;font-weight:500;}
+.tool-links{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+.tool-link{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:8px;text-decoration:none;color:var(--text);transition:all 0.15s;}
+.tool-link:active{transform:scale(0.98);border-color:var(--accent);}
+.tool-link .v{font-size:11px;color:var(--text3);background:var(--surface2);padding:2px 8px;border-radius:4px;}
+.tool-link .name{font-weight:600;font-size:14px;flex:1;}
+.tool-link .arrow{color:var(--text3);}
+.tool-link.recommended{border-color:var(--accent);background:var(--accent-dim);}
+.tool-link.recommended .v{background:var(--accent);color:#fff;}
+
+.hidden{display:none!important;}
+.tag{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;background:var(--gold);color:#000;font-weight:600;margin-top:6px;}
+.footer{text-align:center;color:var(--text3);font-size:11px;padding:20px 16px;border-top:1px solid var(--border);margin-top:auto;}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">🎯 <span>定位诊断</span></div>
+  <div class="sub">答5道题，帮你找到你的内容方向</div>
+</div>
+
+<div class="page" id="app">
+  <!-- 进度条 -->
+  <div class="progress" id="progressBar"></div>
+
+  <!-- 问题区 -->
+  <div id="questionArea"></div>
+
+  <!-- 结果区 -->
+  <div id="resultArea" class="hidden"></div>
+</div>
+
+<div class="footer"><b>无我即我</b> · X系统出品</div>
+
+<script>
+const QUESTIONS = [
+  {
+    q: '你是什么身份？',
+    hint: '你的身份决定了你说话的角度和可信度',
+    multi: false,
+    options: [
+      {icon:'💼', title:'职场人/打工人', desc:'在某个行业干了几年，有实战经验'},
+      {icon:'🚀', title:'创业者/老板', desc:'自己当老板，管过人、做过生意'},
+      {icon:'📈', title:'投资者/交易者', desc:'在股市/币圈摸爬滚打过，有亏有赚'},
+      {icon:'🎨', title:'自由职业者', desc:'靠手艺/专业吃饭，有自己的作品'},
+      {icon:'📚', title:'终身学习者', desc:'爱读书、爱总结、爱分享'},
+      {icon:'💪', title:'有特殊经历的人', desc:'吃过苦、走过弯路、有故事的人'},
+      {icon:'🤔', title:'还没想清楚', desc:'别急，做完诊断你就知道了'},
+    ]
+  },
+  {
+    q: '你身上最值钱的经历是什么？',
+    hint: '你踩过的坑比你讲过的道理更值钱',
+    multi: false,
+    options: [
+      {icon:'🔧', title:'有专业技能', desc:'你会的别人不会，或者没你精'},
+      {icon:'💀', title:'有过失败教训', desc:'亏过钱、跌过跤——这些教训最有说服力'},
+      {icon:'🌍', title:'有特殊见闻', desc:'去过别人没去过的地方，见过别人没见过的事'},
+      {icon:'🧠', title:'善于总结方法', desc:'能把复杂的事说得简单，能把经验提炼成工具'},
+      {icon:'🔥', title:'有过逆袭经历', desc:'从低处爬起来的经历，本身就是最好的内容'},
+      {icon:'🔍', title:'我不知道自己有啥特别的', desc:'那就让诊断帮你找出来'},
+    ]
+  },
+  {
+    q: '你想帮谁？',
+    hint: '越具体越好。帮"刚工作3年的你"比帮"年轻人"更有力量',
+    multi: true,
+    options: [
+      {icon:'👶', title:'刚入行的新人', desc:'啥都不懂，需要人带着入门'},
+      {icon:'🤝', title:'和过去的我一样的人', desc:'正在经历你曾经经历过的困境'},
+      {icon:'📖', title:'想学我这项技能的人', desc:'你的专业/经验正好是他们需要的'},
+      {icon:'💊', title:'遇到我曾经遇到问题的人', desc:'你走出来的路，正是他们想走的路'},
+      {icon:'👥', title:'某个特定圈子的人', desc:'比如：宝妈、工程师、小老板、散户'},
+      {icon:'🌐', title:'谁都行，我不挑', desc:'那我帮你挑一个最合适的'},
+    ]
+  },
+  {
+    q: '他们最痛的点是什么？',
+    hint: '痛点 = 你的切入点。找到痛，你就知道拍什么了',
+    multi: false,
+    options: [
+      {icon:'🚦', title:'不知道从哪开始', desc:'信息太多，不知道怎么迈出第一步'},
+      {icon:'😫', title:'坚持不下去', desc:'试了很多次，每次都半途而废'},
+      {icon:'🤷', title:'方法不对', desc:'方向错了，越努力越糟糕'},
+      {icon:'🧩', title:'没有系统', desc:'东学一点西学一点，连不成体系'},
+      {icon:'💸', title:'亏了钱/踩了坑', desc:'交了学费但没学会，需要有人帮他复盘'},
+      {icon:'👀', title:'没人理解他', desc:'他的困境身边的人都不懂，他想找到同类'},
+    ]
+  },
+  {
+    q: '你希望用什么方式讲给他们听？',
+    hint: '形式不重要，重要的是你讲得舒服，他们听得进去',
+    multi: false,
+    options: [
+      {icon:'🎬', title:'拍短视频', desc:'真人出镜，面对面聊天'},
+      {icon:'✍️', title:'写文章/公众号', desc:'文字更擅长，写得深一点'},
+      {icon:'🎙️', title:'口播/音频', desc:'不用出镜，只出声也行'},
+      {icon:'📊', title:'图文/知识卡片', desc:'把干货做成图，一目了然'},
+      {icon:'🤷', title:'还没想好形式', desc:'先确定方向，形式可以后定'},
+    ]
+  }
+];
+
+// 推荐逻辑
+const RECS = [
+  {minSkill:0, maxSkill:2, rec:'V1', reason:'建议先熟悉内容创作的底层素材，用钩子库找感觉'},
+  {minSkill:3, maxSkill:4, rec:'V2', reason:'有一定方向了，用自动生成器快速出稿'},
+  {minSkill:5, maxSkill:6, rec:'V3', reason:'你有自己的故事和经验，用复合型做出属于你的内容'},
+];
+
+let step = 0;
+const answers = [];
+
+function init(){
+  renderProgress();
+  renderQuestion(0);
+}
+
+function renderProgress(){
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = '';
+  for(let i=0;i<QUESTIONS.length;i++){
+    const dot = document.createElement('div');
+    dot.className = 'prog-dot';
+    if(i<step) dot.classList.add('done');
+    else if(i===step) dot.classList.add('current');
+    bar.appendChild(dot);
+  }
+}
+
+function renderQuestion(idx){
+  const area = document.getElementById('questionArea');
+  area.classList.remove('hidden');
+  document.getElementById('resultArea').classList.add('hidden');
+  const q = QUESTIONS[idx];
+  let html = `<div class="card">
+    <div class="step-label">第${idx+1}/${QUESTIONS.length}题</div>
+    <h2>${q.q}</h2>
+    <div class="hint">${q.hint}</div>
+    <div class="options">`;
+  q.options.forEach((opt, oi)=>{
+    const sel = answers[idx]===oi ? 'selected' : '';
+    html += `<div class="opt ${sel}" onclick="selectOpt(${idx},${oi})">
+      <div class="icon">${opt.icon}</div>
+      <div class="text">
+        <div class="title">${opt.title}</div>
+        <div class="desc">${opt.desc}</div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  if(answers[idx]!==undefined){
+    html += `<div class="btn-row">
+      <button class="btn btn-primary" onclick="nextStep()">继续 →</button>
+    </div>`;
+  }
+  html += `</div>`;
+  area.innerHTML = html;
+}
+
+function selectOpt(qIdx, oIdx){
+  answers[qIdx] = oIdx;
+  renderQuestion(qIdx);
+}
+
+function nextStep(){
+  step++;
+  if(step < QUESTIONS.length){
+    renderProgress();
+    renderQuestion(step);
+  }else{
+    renderProgress();
+    showResult();
+  }
+}
+
+function showResult(){
+  document.getElementById('questionArea').classList.add('hidden');
+  const area = document.getElementById('resultArea');
+  area.classList.remove('hidden');
+
+  // 计算技能成熟度（从答案中估算）
+  const identity = answers[0]; // 身份
+  const skill = answers[1];    // 经历
+  const target = answers[2];   // 受众
+  const pain = answers[3];     // 痛点
+  const form = answers[4];     // 形式
+
+  // 匹配推荐工具
+  const skillScore = identity + skill;
+  let rec = RECS.find(r => skillScore>=r.minSkill && skillScore<=r.maxSkill);
+  if(!rec) rec = RECS[2]; // default to V3
+
+  // 生成定位描述
+  const identityLabels = ['打工人/职场人','创业者/老板','投资者/交易者','自由职业者','终身学习者','有特殊经历的人','还没想清楚的人'];
+  const skillLabels = ['专业技能','失败教训','特殊见闻','方法总结','逆袭经历','有待挖掘的潜力'];
+  const targetLabels = ['刚入行的新人','和过去的我一样的人','想学我技能的人','遇到我遇到过的问题的人','某个特定圈子的人','不挑受众的人'];
+  const painLabels = ['不知道从哪开始','坚持不下去','方法不对','没有系统','亏了钱踩了坑','没人理解'];
+  const formLabels = ['拍短视频','写文章','口播音频','图文卡片','还没确定形式'];
+
+  const pos = `一个${identityLabels[identity]}，用自己的${skillLabels[skill]}，帮助${targetLabels[target]}解决「${painLabels[pain]}」的问题`;
+  const tagline = skill%2===0 ? '你踩过的坑，就是别人最需要的内容' : '你的经验，就是最好的铲子';
+
+  const toolNames = {
+    V1: {name:'🎣 货架型', file:'V1_货架型.html',desc:'浏览钩子库和公式，自己挑自己选'},
+    V2: {name:'🤖 自动型', file:'V2_自动型.html',desc:'选主题→选风格→一键出完整脚本'},
+    V3: {name:'🛠 复合型', file:'V3_复合型.html',desc:'填入你的真实故事，合成专属脚本'},
+  };
+  const tc = toolNames[rec.rec];
+
+  const toolOrder = ['V1','V2','V3'];
+
+  area.innerHTML = `
+    <div class="result-card">
+      <div class="big-icon">🎯</div>
+      <h2>你的定位卡</h2>
+      <div class="tagline">"${tagline}"</div>
+      <div class="position-box">
+        <div class="label">📋 你的内容定位</div>
+        ${pos}
+      </div>
+      <div class="rec">⭐ 推荐你先用 ${tc.name}</div>
+      <div style="font-size:13px;color:var(--text2);margin-top:6px;">${tc.desc}</div>
+    </div>
+
+    <div style="font-size:13px;color:var(--text2);margin-bottom:12px;font-weight:500;">📦 所有工具</div>
+    <div class="tool-links">
+      ${toolOrder.map(v=>{
+        const t = toolNames[v];
+        const isRec = v===rec.rec;
+        return `<a href="${t.file}" class="tool-link ${isRec?'recommended':''}" target="_blank">
+          <span class="v">${isRec?'⭐':'V'}</span>
+          <span class="name">${t.name}</span>
+          <span style="font-size:12px;color:var(--text2);flex:1;">${t.desc}</span>
+          <span class="arrow">→</span>
+        </a>`;
+      }).join('')}
+    </div>
+
+    <div style="margin-top:16px;">
+      <button class="btn btn-secondary" onclick="restart()" style="width:100%;padding:12px;border:none;border-radius:8px;background:var(--surface2);color:var(--text2);font-size:13px;cursor:pointer;font-family:inherit;">重新诊断</button>
+    </div>
+  `;
+}
+
+function restart(){
+  step=0;
+  answers.length=0;
+  document.getElementById('resultArea').classList.add('hidden');
+  document.getElementById('questionArea').classList.remove('hidden');
+  renderProgress();
+  renderQuestion(0);
+}
+
+init();
+</script>
+</body>
+</html>
