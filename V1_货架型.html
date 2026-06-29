@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>🎣 钩子货架 · 无我即我</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#0a0a0f;--surface:#12121a;--surface2:#1a1a28;--border:#2a2a40;--border2:#3a3a55;--text:#e8e8f0;--text2:#8888a0;--text3:#5a5a70;--accent:#7c5cfc;--accent2:#a78bfa;--accent-dim:rgba(124,92,252,0.12);--gold:#f59e0b;--radius:10px;--radius-sm:6px;}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,10,15,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:12px 16px 8px;}
+.topbar .logo{font-size:16px;font-weight:700;}.topbar .logo span{color:var(--accent);}
+.topbar .sub{font-size:11px;color:var(--text2);margin-top:1px;}
+.topbar .model{font-size:10px;color:var(--gold);background:rgba(245,158,11,0.1);display:inline-block;padding:1px 8px;border-radius:8px;margin-top:3px;}
+
+/* 数控系统 — 画龙点睛 */
+.cnc-panel{background:linear-gradient(135deg,rgba(245,158,11,0.06),rgba(124,92,252,0.06));border:1px solid rgba(245,158,11,0.2);border-radius:var(--radius);margin:8px 16px;overflow:hidden;}
+.cnc-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;font-size:13px;font-weight:600;color:var(--gold);user-select:none;}
+.cnc-body{padding:0 14px 14px;font-size:13px;line-height:1.7;}
+.cnc-step{display:flex;gap:10px;margin-bottom:12px;}
+.cnc-step:last-child{margin-bottom:0;}
+.cnc-num{width:24px;height:24px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:1px;}
+.cnc-q{font-weight:600;color:var(--text);margin-bottom:2px;font-size:13px;}
+.cnc-a{color:var(--text2);font-size:12px;}
+.cnc-footer{font-size:11px;color:var(--text3);font-style:italic;margin-top:10px;padding-top:8px;border-top:1px solid rgba(245,158,11,0.1);}
+.cnc-tag{display:inline-block;font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(245,158,11,0.15);color:var(--gold);margin-left:6px;font-weight:400;}
+
+.tabs{display:flex;gap:0;margin-top:10px;background:var(--surface);border-radius:8px;padding:3px;border:1px solid var(--border);}
+.tab{flex:1;padding:8px 4px;text-align:center;background:transparent;border:none;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;border-radius:6px;transition:all 0.2s;}
+.tab .tab-icon{display:block;font-size:16px;margin-bottom:1px;}
+.tab.active{background:var(--accent);color:#fff;}
+.panel{display:none;padding:12px 16px 80px;animation:fadeIn 0.2s ease;}
+.panel.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.cat-bar{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;scrollbar-width:none;}
+.cat-bar::-webkit-scrollbar{display:none;}
+.cat-btn{flex-shrink:0;padding:6px 14px;border-radius:16px;background:var(--surface);border:1px solid var(--border);color:var(--text2);font-size:12px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
+.cat-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent2);}
+.hook-list{display:flex;flex-direction:column;gap:8px;}
+.hook-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;cursor:pointer;transition:all 0.15s;position:relative;}
+.hook-item:active{transform:scale(0.98);border-color:var(--accent);}
+.hook-item .hook-text{font-size:14px;line-height:1.6;}
+.hook-item .hook-tag{display:inline-block;font-size:10px;padding:1px 8px;border-radius:10px;background:var(--accent-dim);color:var(--accent2);margin-bottom:6px;font-weight:500;}
+.hook-item .copy-badge{position:absolute;top:10px;right:12px;font-size:10px;color:var(--text3);}
+.search-box{display:flex;gap:8px;margin-bottom:12px;}
+.search-box input{flex:1;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:14px;outline:none;font-family:inherit;}
+.search-box input:focus{border-color:var(--accent);}
+.search-box input::placeholder{color:var(--text3);}
+.formula-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;}
+.formula-card h3{font-size:15px;font-weight:600;margin-bottom:4px;}
+.formula-card .sub{font-size:12px;color:var(--text2);margin-bottom:12px;}
+.formula-steps{list-style:none;padding:0;}
+.formula-steps li{padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;line-height:1.5;display:flex;gap:8px;}
+.formula-steps li:last-child{border-bottom:none;}
+.formula-steps .step-num{flex-shrink:0;width:20px;height:20px;border-radius:50%;background:var(--accent-dim);color:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;margin-top:1px;}
+.formula-steps .step-desc{flex:1;}
+.example-box{margin-top:10px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);font-size:12px;line-height:1.7;color:var(--text2);border:1px dashed var(--border);cursor:pointer;}
+.example-box pre{font-family:inherit;white-space:pre-wrap;margin:0;font-size:12px;line-height:1.6;}
+.quote-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:8px;cursor:pointer;transition:all 0.15s;position:relative;}
+.quote-item:active{transform:scale(0.98);border-color:var(--gold);}
+.quote-item .quote-text{font-size:14px;line-height:1.7;font-style:italic;}
+.quote-item .quote-source{font-size:11px;color:var(--text2);margin-top:6px;}
+.quote-item .copy-badge{position:absolute;top:12px;right:12px;font-size:10px;color:var(--text3);}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border2);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.5);z-index:999;opacity:0;transition:opacity 0.25s;pointer-events:none;backdrop-filter:blur(8px);}
+.toast.show{opacity:1;}
+.footer{text-align:center;color:var(--text3);font-size:11px;padding:20px 16px 32px;border-top:1px solid var(--border);margin-top:8px;}
+.footer b{color:var(--text2);}
+
+/* 解锁层 */
+.lock-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,10,15,0.85);backdrop-filter:blur(8px);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;}
+.lock-box{background:var(--surface);border:1px solid var(--accent);border-radius:16px;padding:28px 24px;max-width:400px;width:100%;text-align:center;animation:fadeIn 0.3s;}
+.lock-box .icon{font-size:48px;margin-bottom:12px;}
+.lock-box h2{font-size:20px;font-weight:700;margin-bottom:6px;}
+.lock-box .sub{font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.5;}
+.lock-box input{width:100%;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:16px;text-align:center;outline:none;font-family:inherit;margin-bottom:12px;letter-spacing:4px;}
+.lock-box input:focus{border-color:var(--accent);}
+.lock-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;}
+.lock-btn:active{transform:scale(0.97);}
+.lock-btn2{width:100%;padding:10px;background:transparent;color:var(--text3);border:none;font-size:12px;cursor:pointer;font-family:inherit;margin-top:8px;}
+.lock-btn2:active{color:var(--text2);}
+.lock-badge{display:inline-block;font-size:10px;padding:2px 10px;border-radius:10px;background:var(--gold);color:#000;font-weight:600;margin-bottom:4px;}
+.unlocked .lock-overlay{display:none!important;}
+
+@media(min-width:600px){body{padding:0 40px;max-width:1200px;margin:0 auto;font-size:16px;}
+  .hook-item .hook-text{font-size:15px;}
+  .formula-card h3{font-size:17px;}
+  .formula-steps li{font-size:15px;}
+  .quote-item .quote-text{font-size:15px;}
+  .cat-btn{font-size:14px;padding:8px 18px;}
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">🎣 <span>钩子货架</span> · 型号V1</div>
+  <div class="sub">自己逛自己挑，选中了就拿走</div>
+  <div class="model">🔖 货架型 — 浏览选材，手动复制</div>
+</div>
+
+<!-- ⚙️ 数控系统 · 画龙点睛 -->
+<div class="cnc-panel" id="cncPanel">
+  <div class="cnc-header" onclick="toggleCnc()">
+    <span>🎯 拍之前先想清楚这三件事 <span class="cnc-tag">数控引导</span></span>
+    <span id="cncToggle">▼</span>
+  </div>
+  <div class="cnc-body" id="cncBody">
+    <div class="cnc-step">
+      <div class="cnc-num">1</div>
+      <div class="cnc-content">
+        <div class="cnc-q">这条视频拍给谁的？</div>
+        <div class="cnc-a">越具体越好。不是"年轻人"，是"刚工作3年、想搞副业但不知道从哪下手的你"。</div>
+      </div>
+    </div>
+    <div class="cnc-step">
+      <div class="cnc-num">2</div>
+      <div class="cnc-content">
+        <div class="cnc-q">能帮他解决什么问题？</div>
+        <div class="cnc-a">不是"讲个道理"，是"你看完就能用"。他看完这条视频，手上能多一把什么铲子？</div>
+      </div>
+    </div>
+    <div class="cnc-step">
+      <div class="cnc-num">3</div>
+      <div class="cnc-content">
+        <div class="cnc-q">怎么讲他愿意听？</div>
+        <div class="cnc-a">用他的语言、说他的事、用故事代替说教、用真实代替正确。不是"我教你"，是"我试过，你也行"。</div>
+      </div>
+    </div>
+    <div class="cnc-footer">💡 这三个问题想清楚了，再用下面的工具。工具只是帮你把答案做出来。技术不是灵魂，价值才是。</div>
+  </div>
+</div>
+
+<div class="tabs">
+    <button class="tab active" data-panel="hooks"><span class="tab-icon">🎣</span>钩子库</button>
+    <button class="tab" data-panel="formulas"><span class="tab-icon">📜</span>脚本公式</button>
+    <button class="tab" data-panel="quotes"><span class="tab-icon">💎</span>金句库</button>
+  </div>
+</div>
+
+<div class="panel active" id="panel-hooks">
+  <div class="search-box"><input id="hookSearch" type="text" placeholder="🔍 搜钩子…" oninput="filterHooks()"></div>
+  <div class="cat-bar" id="hookCats"></div>
+  <div class="hook-list" id="hookList"></div>
+</div>
+
+<div class="panel" id="panel-formulas"><div id="formulaList"></div></div>
+
+<div class="panel" id="panel-quotes">
+  <div class="search-box"><input id="quoteSearch" type="text" placeholder="🔍 搜金句…" oninput="filterQuotes()"></div>
+  <div class="cat-bar" id="quoteCats"></div>
+  <div class="quote-list" id="quoteList"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 解锁弹窗 -->
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-box">
+    <div class="icon">🔒</div>
+    <div class="lock-badge">免费预览版</div>
+    <h2>50个钩子 · 免费试用</h2>
+    <div class="sub">
+      这是免费版，含50个精选钩子+脚本公式+金句库<br>
+      ⭐ 加入星球解锁全部 <strong>200+钩子+持续更新</strong>
+    </div>
+    <input id="unlockInput" type="password" maxlength="8" placeholder="输入星球密码" autocomplete="off">
+    <button class="lock-btn" onclick="tryUnlock()">解锁完整版</button>
+    <button class="lock-btn2" onclick="skipLock()">先看看免费版</button>
+    <div style="margin-top:12px;font-size:11px;color:var(--text3);">已加入星球？密码在置顶帖里</div>
+  </div>
+</div>
+
+<div class="footer"><b>无我即我</b> · X系统出品 · 型号V1 货架型</div>
+
+<script>
+const CATS=[{id:'suspense',name:'悬念型',icon:'🎯'},{id:'pain',name:'痛点型',icon:'💢'},{id:'contrarian',name:'反常识型',icon:'🔄'},{id:'story',name:'故事型',icon:'📖'},{id:'self',name:'自曝型',icon:'😅'},{id:'data',name:'数据型',icon:'📊'},{id:'heart',name:'扎心型',icon:'💔'},{id:'benefit',name:'利益型',icon:'💰'},{id:'interact',name:'互动型',icon:'✋'},{id:'compare',name:'对比型',icon:'⚖️'}];
+const HOOKS=[
+{cat:'suspense',text:'我见过最厉害的一个散户，他的方法你想都想不到。'},
+{cat:'suspense',text:'你知道为什么特种兵戴手表，表盘要朝手心里吗？'},
+{cat:'suspense',text:'这件事我憋了三年，今天终于敢说了。'},
+{cat:'suspense',text:'我花了6年亏了49万，才搞清楚一件事。'},
+{cat:'suspense',text:'你绝对想不到，真正厉害的人，手机里从来不装这个APP。'},
+{cat:'suspense',text:'上周三收盘后，一个粉丝给我发了条私信，就一句话。'},
+{cat:'suspense',text:'有个方法让我一个月多赚了3倍，但我不敢告诉同行。'},
+{cat:'suspense',text:'如果你现在刷到这条视频，说明你该听听下面这段话了。'},
+{cat:'pain',text:'你有没有发现，越努力的人反而越穷？'},
+{cat:'pain',text:'你是不是也这样——每天忙得要死，月底一看啥也没干成。'},
+{cat:'pain',text:'你试过多少次想早起，结果按掉闹钟继续睡？'},
+{cat:'pain',text:'最气人的是什么？你明明知道该怎么做，就是做不到。'},
+{cat:'pain',text:'你有没有过这种时候——跟人聊完天，感觉整个人被抽干了？'},
+{cat:'pain',text:'你是不是特别在意别人怎么看你？'},
+{cat:'pain',text:'你有没有为了面子干过后悔的事？'},
+{cat:'pain',text:'每次想学点新东西，坚持了三天就放弃了？'},
+{cat:'pain',text:'说句扎心的——你那么努力，为什么老板还是不重用你？'},
+{cat:'contrarian',text:'你以为自律是靠意志力？错了，自律是靠系统。'},
+{cat:'contrarian',text:'越聪明的人，越容易亏大钱。'},
+{cat:'contrarian',text:'对人友善不一定会被尊重，有底线才会。'},
+{cat:'contrarian',text:'执行力强的人，往往不是最勤奋的，而是最懒的。'},
+{cat:'contrarian',text:'你越急着回本的时候，亏得越惨。'},
+{cat:'contrarian',text:'你最大的敌人不是能力不够，是怕丢人。'},
+{cat:'contrarian',text:'不是所有坚持都值得，有时候放弃才是对的。'},
+{cat:'story',text:'我刚工作那会儿，被老板当众训哭过。'},
+{cat:'story',text:'那年我排队买相机，排了一整夜，到我的时候卖完了。'},
+{cat:'story',text:'我被骗了70万，因为对方太像"成功人士"了。'},
+{cat:'story',text:'那年我在日本工厂实习，食堂里几个日本人当着我面换台。'},
+{cat:'story',text:'我儿子早上跑过来跟我说：爸爸，特种兵手表反过来戴。'},
+{cat:'story',text:'14年前我进了一家小工厂，当时谁都看不起，现在我还在。'},
+{cat:'self',text:'说出来不怕你笑话，我炒股前7年亏了150万。'},
+{cat:'self',text:'我干过一件特别蠢的事——抢着买单，花了半个月工资。'},
+{cat:'self',text:'我曾经以为自己很厉害，直到被现实狠狠打了一巴掌。'},
+{cat:'self',text:'我花了好几年才承认一件事——我不是天才。'},
+{cat:'self',text:'我犯过最大的错，就是把运气当能力。'},
+{cat:'data',text:'说出来你可能不信，90%的人一辈子都没用过自己真正的潜力。'},
+{cat:'data',text:'7年，150万，40版宪法——这是我交的学费。'},
+{cat:'data',text:'80%的人做短视频死在了第一步——前3秒。'},
+{cat:'data',text:'全中国只有不到5%的人，真正清楚自己每天在干什么。'},
+{cat:'heart',text:'说句扎心的——你发朋友圈不是记录生活，是怕别人忘了你。'},
+{cat:'heart',text:'你不是忙，你是在假装努力骗自己。'},
+{cat:'heart',text:'你怕的不是失败，是别人看到你失败。'},
+{cat:'heart',text:'你不是没时间，你是不重视。'},
+{cat:'benefit',text:'看完这条视频，你至少能省下3年摸索的时间。'},
+{cat:'benefit',text:'这个工具我用了一年，效果显著，今天免费分享给你。'},
+{cat:'benefit',text:'不用花一分钱，就能让你的短视频前3秒留住人。'},
+{cat:'interact',text:'先别划走，我问你一个问题——你有真正的朋友吗？'},
+{cat:'interact',text:'你敢不敢在评论区打出你最后悔的一件事？'},
+{cat:'interact',text:'来，做个选择——稳定但无聊，还是自由但冒险？'},
+{cat:'compare',text:'同样做短视频，为什么他3个月涨粉10万，你3个月还是3个粉丝？'},
+{cat:'compare',text:'高手和普通人的区别就一句话——高手建系统，普通人凭感觉。'},
+];
+const FORMULAS=[
+{name:'⭐ 黄金公式',desc:'万能模板，适合大多数口播场景',steps:['钩子句：前3秒抓注意力','讲痛点：说出观众的困境','给方法：分三步走','金句收尾：一句让人收藏的话','互动引导：让观众评论'],example:'🎣 你有没有发现，越努力的人反而越穷？\n💢 你是不是也觉得，每天忙得要死月底一看啥也没干成？\n🔧 分三步：①砍掉低价值的事 ②聚焦一件事做到极致 ③用系统代替意志力\n💎 不是努力没用，是在错误的地方努力。\n📢 你也有过这种经历吗？评论区聊聊。'},
+{name:'❓ 问题前置',desc:'扎心问题开场，适合认知类',steps:['直击问题：替观众问出来','我的故事：真实经历引起共鸣','悟到的道理：从经历中提炼','给动作：看完能做什么','金句收尾'],example:'❓ 你有没有为了面子干过后悔的事？\n📖 我干过。刚工作那会儿抢着买单，半个月工资没了。\n🧠 后来我才明白，面子是世界上最贵的消费。\n🔧 下次觉得"不做没面子"时，问自己三个问题。\n💎 面子不是别人给的，是你自己放不下的。'},
+{name:'🎯 悬念型',desc:'制造悬念让人想看到底',steps:['悬念场景：只说现象不给答案','转折：出人意料的发展','揭晓真相：背后的原因','金句收尾：点题回味','互动引导'],example:'🌀 上周三，一个粉丝给我发了条私信。\n🔄 他说他亏了70万，但我想跟他说的不是怎么亏的。\n🔍 他亏钱的原因不是不懂技术，是太相信别人了。\n💎 善良要有牙齿，信任要有边界。\n📢 你有过类似的经历吗？'},
+{name:'📖 故事型',desc:'完整个人故事打动人',steps:['开场：画面感','经过：发生了什么','转折：意想不到的变化','结果：学到了什么','启发：送给观众的道理'],example:'那年我在日本工厂，几个日本人当着我面换台。\n我忍了很久，有一天烦了，把遥控拿过来盯着他们看。\n从那以后只要有我在，他们不敢换台。\n人的尊严是自己争取的。'},
+];
+const QUOTE_CATS=[{id:'invest',name:'投资',icon:'📈'},{id:'growth',name:'成长',icon:'🌱'},{id:'life',name:'人生',icon:'✨'},{id:'action',name:'行动',icon:'⚡'}];
+const QUOTES=[
+{cat:'invest',text:'把运气当能力，把侥幸当常态——我花了7年和150万才戒掉这两样东西。',source:'小张'},
+{cat:'invest',text:'不怨天，不由人。亏了就是自己错了。',source:'小张'},
+{cat:'invest',text:'运气赚的钱，最终会凭实力亏回去。',source:'小张'},
+{cat:'invest',text:'没有人是等准备好了才出发的，你是在路上才变强的。',source:'小张'},
+{cat:'invest',text:'止损不是认输，是给自己留一条活路。',source:'小张'},
+{cat:'growth',text:'有力使力，无力使智。不蛮干，使巧劲。',source:'小张'},
+{cat:'growth',text:'做技术就要较真。不糊弄，不敷衍。',source:'小张'},
+{cat:'growth',text:'自律不是靠意志力，是靠系统。',source:'小张'},
+{cat:'growth',text:'完美没有结束，永远都在进步。',source:'小张'},
+{cat:'growth',text:'先完成，再完美。',source:'行动法则'},
+{cat:'growth',text:'每天做一点，长期了不起。',source:'复利思维'},
+{cat:'life',text:'面子是世界上最贵的消费，没有之一。',source:'小张'},
+{cat:'life',text:'真正的信息，是给自己看的，不是给别人看的。',source:'小张'},
+{cat:'life',text:'善良要有牙齿，信任要有边界。',source:'小张'},
+{cat:'life',text:'你怕的不是失败，是别人看到你失败。',source:'小张'},
+{cat:'life',text:'人这一生就是在玩，关键是你玩出了什么花样。',source:'小张'},
+{cat:'life',text:'你不是忙，你是在假装努力骗自己。',source:'小张'},
+{cat:'action',text:'三分钟后能做的事，现在就做。',source:'行动法则'},
+{cat:'action',text:'每一次都是第一次，认真对待每一次。',source:'投资宪法'},
+{cat:'action',text:'读完之后只是开始，用完之后才算读完。',source:'写作宪法'},
+];
+let ch='suspense',cq='invest';
+function toggleCnc(){const b=document.getElementById('cncBody'),t=document.getElementById('cncToggle');if(!b.style.display||b.style.display==='none'){b.style.display='';t.textContent='▼';}else{b.style.display='none';t.textContent='▶';}}
+
+// === 解锁系统 ===
+var UNLOCK_PWD = "WJJW99";
+function checkUnlock(){
+  try{var u = localStorage.getItem('toolbox_unlocked');
+  if(u === '1'){document.body.classList.add('unlocked');}
+  }catch(e){}
+}
+function tryUnlock(){
+  try{
+    var inp = document.getElementById('unlockInput').value.trim();
+    if(inp === UNLOCK_PWD){
+      document.body.classList.add('unlocked');
+      localStorage.setItem('toolbox_unlocked','1');
+      st('解锁成功！');
+    }else{st('密码错误');document.getElementById('unlockInput').value='';}
+  }catch(e){st('页面错误请刷新');}
+}
+function skipLock(){
+  document.getElementById('lockOverlay').style.display='none';
+  st('免费版浏览中');
+}
+checkUnlock();
+function st(m){
+  var t=document.getElementById('toast');
+  if(t){t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show');},2000);}
+}
+document.querySelectorAll('.tab').forEach(t=>{t.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.getElementById('panel-'+t.dataset.panel).classList.add('active');});});
+function rHC(){const c=document.getElementById('hookCats');c.innerHTML='';CATS.forEach(cat=>{const b=document.createElement('button');b.className='cat-btn'+(cat.id===ch?' active':'');b.textContent=cat.icon+' '+cat.name;b.onclick=()=>{ch=cat.id;rHC();rH();};c.appendChild(b);});}
+function rH(){const c=document.getElementById('hookList'),s=document.getElementById('hookSearch').value.toLowerCase();let its=HOOKS.filter(h=>h.cat===ch);if(s)its=its.filter(h=>h.text.toLowerCase().includes(s));c.innerHTML='';its.forEach(h=>{const d=document.createElement('div');d.className='hook-item';d.innerHTML='<span class="hook-tag">'+CATS.find(x=>x.id===h.cat)?.name+'</span><div class="hook-text">'+h.text+'</div><span class="copy-badge">📋</span>';d.onclick=()=>{navigator.clipboard.writeText(h.text).then(()=>st('✅ 已复制'));};c.appendChild(d);});if(!its.length)c.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:14px;">没有匹配的钩子</div>';}
+function fH(){rH();}
+function rF(){const c=document.getElementById('formulaList');c.innerHTML='';FORMULAS.forEach(f=>{const cd=document.createElement('div');cd.className='formula-card';let sh='';f.steps.forEach((s,i)=>{sh+='<li><span class="step-num">'+(i+1)+'</span><span class="step-desc">'+s+'</span></li>';});cd.innerHTML='<h3>'+f.name+'</h3><div class="sub">'+f.desc+'</div><ul class="formula-steps">'+sh+'</ul><div class="example-box" onclick="cE(this)"><div style="font-size:11px;color:var(--text3);margin-bottom:4px;">📋 点我复制示例</div><pre>'+f.example+'</pre></div>';c.appendChild(cd);});}
+function cE(el){const t=el.querySelector('pre').textContent;navigator.clipboard.writeText(t).then(()=>st('✅ 示例已复制'));}
+function rQC(){const c=document.getElementById('quoteCats');c.innerHTML='';QUOTE_CATS.forEach(qc=>{const b=document.createElement('button');b.className='cat-btn'+(qc.id===cq?' active':'');b.textContent=qc.icon+' '+qc.name;b.onclick=()=>{cq=qc.id;rQC();rQ();};c.appendChild(b);});}
+function rQ(){const c=document.getElementById('quoteList'),s=document.getElementById('quoteSearch').value.toLowerCase();let its=QUOTES.filter(q=>q.cat===cq);if(s)its=its.filter(q=>q.text.toLowerCase().includes(s));c.innerHTML='';its.forEach(q=>{const d=document.createElement('div');d.className='quote-item';d.innerHTML='<div class="quote-text">"'+q.text+'"</div><div class="quote-source">— '+q.source+'</div><span class="copy-badge">📋</span>';d.onclick=()=>{navigator.clipboard.writeText('"'+q.text+'" — '+q.source).then(()=>st('✅ 金句已复制'));};c.appendChild(d);});if(!its.length)c.innerHTML='<div style="text-align:center;padding:40px 0;color:var(--text3);font-size:14px;">没有匹配的金句</div>';}
+function fQ(){rQ();}
+rHC();rH();rF();rQC();rQ();
+</script>
+</body>
+</html>
