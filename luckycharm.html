@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>今日朋友圈运势</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background: #f5f0eb;
+    font-family: 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  }
+  .card {
+    width: 390px;
+    height: 700px;
+    background: linear-gradient(160deg, #fdf6ee 0%, #f5e6d3 40%, #eddcc8 100%);
+    border-radius: 32px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(120, 80, 50, 0.15);
+    padding: 48px 32px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  /* 装饰元素 - 水墨晕染 */
+  .ink-blob {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.06;
+    pointer-events: none;
+  }
+  .ink-blob-1 {
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, #c4462a, transparent);
+    top: -60px; right: -80px;
+  }
+  .ink-blob-2 {
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #2a4c6e, transparent);
+    bottom: -40px; left: -60px;
+  }
+  .ink-blob-3 {
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, #d4a373, transparent);
+    bottom: 180px; right: -20px;
+  }
+  /* 顶部装饰线 */
+  .top-ornament {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #c4462a, transparent);
+    margin-bottom: 24px;
+    opacity: 0.4;
+  }
+  /* 签文编号 */
+  .draw-number {
+    font-size: 13px;
+    color: #a0806a;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+    font-weight: 300;
+  }
+  .fortune-type {
+    font-size: 14px;
+    color: #c4462a;
+    letter-spacing: 2px;
+    margin-bottom: 40px;
+    font-weight: 400;
+    opacity: 0.7;
+  }
+  /* 签文主标题 */
+  .main-text {
+    font-size: 38px;
+    font-weight: 700;
+    color: #3d2b1f;
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    letter-spacing: 2px;
+  }
+  .main-text-sub {
+    font-size: 30px;
+    font-weight: 700;
+    color: #3d2b1f;
+    text-align: center;
+    line-height: 1.3;
+    margin-bottom: 36px;
+    letter-spacing: 2px;
+    opacity: 0.85;
+  }
+  /* 分隔装饰 */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    width: 80%;
+  }
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #d4a373, transparent);
+  }
+  .divider-dot {
+    width: 6px;
+    height: 6px;
+    background: #d4a373;
+    border-radius: 50%;
+    opacity: 0.6;
+  }
+  /* 解读文案 */
+  .interpretation {
+    font-size: 16px;
+    color: #5a4435;
+    text-align: center;
+    line-height: 1.7;
+    margin-bottom: 36px;
+    padding: 0 8px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+  }
+  /* 标签 */
+  .tag {
+    display: inline-block;
+    padding: 6px 18px;
+    border: 1px solid #d4a373;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #8a6e58;
+    letter-spacing: 1px;
+    margin-bottom: auto;
+    background: rgba(255,255,255,0.3);
+  }
+  /* 底部 */
+  .footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 20px;
+  }
+  .brand {
+    font-size: 14px;
+    color: #a0806a;
+    letter-spacing: 6px;
+    font-weight: 300;
+  }
+  .sub-brand {
+    font-size: 11px;
+    color: #c0a890;
+    letter-spacing: 2px;
+  }
+  /* 月亮装饰 */
+  .moon {
+    position: absolute;
+    top: 32px;
+    right: 48px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #f5e6d3, #e8d5c0);
+    box-shadow: 0 0 20px rgba(212, 163, 115, 0.2);
+    opacity: 0.5;
+  }
+  .moon-crescent {
+    position: absolute;
+    top: 28px;
+    right: 44px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f5f0eb;
+    transform: translate(8px, -4px);
+  }
+  /* 重新生成按钮（截图时建议裁掉） */
+  .regen-btn {
+    margin-top: 16px;
+    padding: 10px 28px;
+    background: rgba(196, 70, 42, 0.1);
+    border: 1px solid rgba(196, 70, 42, 0.2);
+    border-radius: 24px;
+    color: #8a6e58;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+  .regen-btn:hover {
+    background: rgba(196, 70, 42, 0.2);
+  }
+  .regen-btn:active {
+    transform: scale(0.97);
+  }
+  /* 分享水印——截图时裁掉这行 */
+  .screenshot-tip {
+    font-size: 11px;
+    color: #c0a890;
+    margin-top: 8px;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="card">
+  <!-- 装饰 -->
+  <div class="ink-blob ink-blob-1"></div>
+  <div class="ink-blob ink-blob-2"></div>
+  <div class="ink-blob ink-blob-3"></div>
+  <div class="moon"><div class="moon-crescent"></div></div>
+
+  <!-- 内容 -->
+  <div class="top-ornament"></div>
+  <div class="draw-number" id="drawNumber">第 1 签</div>
+  <div class="fortune-type" id="fortuneType">· 中 吉 ·</div>
+
+  <div class="main-text" id="mainText">宜发自拍</div>
+  <div class="main-text-sub" id="mainTextSub">忌发牢骚</div>
+
+  <div class="divider">
+    <span class="divider-line"></span>
+    <span class="divider-dot"></span>
+    <span class="divider-line"></span>
+  </div>
+
+  <div class="interpretation" id="interpretation">
+    今天你的脸就是最大的内容，别浪费在吐槽天气上。
+  </div>
+
+  <div class="tag" id="tag">👥 今日宜：自拍爱好者</div>
+
+  <div class="footer" style="margin-top:auto;">
+    <div class="brand">🪷 朋友圈运势</div>
+    <div class="sub-brand">每日一签 · 明日再来</div>
+  </div>
+</div>
+
+<button class="regen-btn" onclick="generateNew()">🎯 再摇一签</button>
+<div class="screenshot-tip">⬆ 点按钮可刷新 · 截图发朋友圈即可</div>
+
+<script>
+const slips = [
+  { num: 1, type: "中吉", main: "宜发自拍", sub: "忌发牢骚", text: "今天你的脸就是最大的内容，别浪费在吐槽天气上。", tag: "自拍爱好者" },
+  { num: 2, type: "中吉", main: "宜晒猫", sub: "忌晒加班", text: "猫片永远有人看，加班照只会让老板觉得你还能再加。", tag: "打工人/猫奴" },
+  { num: 3, type: "小吉", main: "宜装死", sub: "忌对线", text: "评论区有人阴阳你？看不见，今天你是屏蔽技能满点的忍者。", tag: "社恐/玻璃心" },
+  { num: 4, type: "中吉", main: "宜深夜emo", sub: "忌白天矫情", text: "凌晨两点可以发「人间不值得」，但早上八点请准时出现在工位上。", tag: "深夜emo选手" },
+  { num: 5, type: "中吉", main: "宜凡尔赛", sub: "忌真炫耀", text: "暗戳戳晒是水平，赤裸裸晒是找骂。今天把握好那个度。", tag: "内容创作者" },
+  { num: 6, type: "小吉", main: "宜发旧照", sub: "忌硬凹造型", text: "翻翻相册去年的今天，比今天现拍的自然一百倍。", tag: "不爱拍照的人" },
+  { num: 7, type: "大吉", main: "宜求安慰", sub: "忌假装坚强", text: "发一句「今天有点累」，你会收到比想象中多的关心。", tag: "嘴硬心软的人" },
+  { num: 8, type: "小吉", main: "宜点赞之交", sub: "忌深度私聊", text: "今天适合当气氛组，但别主动找人谈心——水太深你把握不住。", tag: "社交电量低的人" },
+  { num: 9, type: "大吉", main: "宜画饼", sub: "忌躺平", text: "今天适合发一条「我在做一件大事」——饼先画上，做不做得成再说。", tag: "创业者/自由职业" },
+  { num: 10, type: "中吉", main: "宜报喜", sub: "忌诉苦", text: "赚了100块也要发得像赚了1万块，气场这东西是装出来的。", tag: "搞钱人" },
+  { num: 11, type: "中吉", main: "宜立Flag", sub: "忌打脸", text: "反正Flag早晚要倒，不如趁今天立个大的，倒的时候还能再蹭一波流量。", tag: "卷王/自律狂人" },
+  { num: 12, type: "小吉", main: "宜消失", sub: "忌刷存在", text: "今天不发朋友圈，让别人觉得你在闷声干大事。", tag: "想装高冷的人" },
+  { num: 13, type: "大吉", main: "宜秀恩爱", sub: "忌翻旧账", text: "今日宜发合照，不宜翻聊天记录。过去的事就让它过去吧。", tag: "恋爱脑" },
+  { num: 14, type: "中吉", main: "宜单身快乐", sub: "忌酸别人", text: "今天你的主题是：一个人也很爽。别在别人合照底下阴阳怪气。", tag: "单身人士" },
+  { num: 15, type: "中吉", main: "宜隐晦表白", sub: "忌直球", text: "发一句只有TA能看懂的暗语——TA看懂了是缘分，没看懂就当对空气说了。", tag: "暗恋中的人" },
+  { num: 16, type: "凶", main: "宜断联", sub: "忌视奸", text: "今天别点进那个人的主页。你看到的每一张照片都会让你多失眠一小时。", tag: "刚分手的人" },
+  { num: 17, type: "大吉", main: "宜摆烂", sub: "忌努力", text: "今天躺平是顺应天意。非要努力的话，建议先睡一觉——明天再说。", tag: "间歇性摆烂者" },
+  { num: 18, type: "小吉", main: "宜废话文学", sub: "忌深度思考", text: "今天适合发一句听起来很有道理但其实啥也没说的话。", tag: "废话文学大师" },
+  { num: 19, type: "中吉", main: "宜发疯", sub: "忌正常", text: "今天你的人设是精神状态不太稳定但很有趣的一个人。放心发疯。", tag: "精神状态美丽的人" },
+  { num: 20, type: "小吉", main: "宜晒外卖", sub: "忌晒健身", text: "今天你的身体需要碳水，不是自律。炸鸡配可乐，发出来就是态度。", tag: "吃货" },
+  { num: 21, type: "中吉", main: "宜风景", sub: "忌九宫格", text: "今天拍到的晚霞，一张就够了。九宫格是旅游博主干的事。", tag: "随手拍爱好者" },
+  { num: 22, type: "中吉", main: "宜怀旧", sub: "忌伤感", text: "适合分享一首老歌，配一句「当年听不懂，现在听哭了」——百试百灵。", tag: "80后/90后" },
+  { num: 23, type: "大吉", main: "宜晒书", sub: "忌晒剧", text: "晒书显得有文化，晒剧显得有时间。今天你的人设是文化人。", tag: "想立人设的人" },
+  { num: 24, type: "小吉", main: "宜报天气", sub: "忌报心情", text: "「今天下雨了」比「今天心情不好」高级一整个档次。", tag: "不愿暴露情绪的人" },
+  { num: 25, type: "中吉", main: "宜拉黑", sub: "忌内耗", text: "那个让你不舒服的人，今天适合删了。少一个烦人精多一份清净。", tag: "讨好型人格" },
+  { num: 26, type: "中吉", main: "宜互动", sub: "忌潜水", text: "今天去五个人的朋友圈底下认真评论——你会发现他们也会来回访你。", tag: "想涨粉的人" },
+  { num: 27, type: "小吉", main: "宜屏蔽", sub: "忌公开怼", text: "看到不想看的内容，屏蔽比评论体面一百倍。留给彼此最后的尊严。", tag: "容易上头的人" },
+  { num: 28, type: "小吉", main: "宜敷衍", sub: "忌认真", text: "有人@你回答复杂问题？回一个表情包就行。不回答比回答聪明。", tag: "懒得应付的人" },
+  { num: 29, type: "大吉", main: "宜做减法", sub: "忌营业", text: "今天的朋友圈配额用完了？那就别发了。高质量账号靠筛选，不是讨好所有人。", tag: "创作者倦怠期" },
+  { num: 30, type: "中吉", main: "宜沉默", sub: "忌解释", text: "你不需要每条朋友圈都回复。沉默不代表你有问题，代表你不需要解释。", tag: "过度解释者" },
+];
+
+function generateNew() {
+  const s = slips[Math.floor(Math.random() * slips.length)];
+  document.getElementById('drawNumber').textContent = `第 ${s.num} 签`;
+  document.getElementById('fortuneType').textContent = `· ${s.type} ·`;
+  document.getElementById('mainText').textContent = s.main;
+  document.getElementById('mainTextSub').textContent = s.sub;
+  document.getElementById('interpretation').textContent = s.text;
+  document.getElementById('tag').textContent = `👥 今日宜：${s.tag}`;
+}
+
+// 首次加载随机
+generateNew();
+</script>
+</body>
+</html>

@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>小生意创业防坑盈亏计算器</title>
+<style>
+/* ═══════════════════════ Reset & Base ═══════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf7f2; --card:#fff; --text:#2d2a26; --text-mid:#7a756e; --text-light:#b0aba3;
+  --orange:#e8842a; --orange-light:#fef0e3; --orange-dark:#c96a15;
+  --green:#2e9a6a; --green-light:#e8f6ef; --red:#d65a4a; --red-light:#fdeeeb;
+  --radius:14px; --radius-sm:10px; --shadow:0 2px 12px rgba(0,0,0,0.06);
+  --font:system-ui,-apple-system,'Segoe UI',Roboto,PingFang SC,Microsoft YaHei,sans-serif;
+}
+html{font-size:16px}
+body{
+  font-family:var(--font); background:var(--bg); color:var(--text);
+  line-height:1.6; min-height:100vh; padding:0 0 90px 0;
+}
+input,select,button{font-family:var(--font); font-size:inherit}
+
+/* ═══════════════════════ Container ═══════════════════════ */
+.wrap{max-width:520px;margin:0 auto;padding:0 16px}
+
+/* ═══════════════════════ Header ═══════════════════════ */
+header{background:var(--card);padding:20px 0 14px;position:sticky;top:0;z-index:20;box-shadow:0 1px 0 rgba(0,0,0,0.06)}
+.header-inner{max-width:520px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:10px}
+header h1{font-size:1.1rem;font-weight:700;flex:1}
+header .badge{font-size:.65rem;color:var(--text-mid);background:var(--bg);padding:2px 10px;border-radius:20px}
+
+/* ═══════════════════════ Steps Bar ═══════════════════════ */
+.steps{display:flex;gap:0;padding:0;position:sticky;top:58px;z-index:19;background:var(--card);box-shadow:0 1px 0 rgba(0,0,0,0.04)}
+.step-item{flex:1;text-align:center;padding:10px 2px 8px;font-size:.65rem;color:var(--text-light);position:relative;transition:color .25s}
+.step-item .dot{display:block;width:28px;height:28px;margin:0 auto 4px;border-radius:50%;background:var(--bg);color:var(--text-mid);font-size:.7rem;font-weight:600;line-height:28px;transition:all .25s}
+.step-item.active .dot{background:var(--orange);color:#fff;transform:scale(1.05)}
+.step-item.done .dot{background:var(--green);color:#fff}
+.step-item.active{color:var(--text);font-weight:600}
+.step-item.done{color:var(--green)}
+
+/* ═══════════════════════ Step Content ═══════════════════════ */
+.step{display:none;animation:fadeUp .35s ease}
+.step.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)}}
+
+.step-title{font-size:1.2rem;font-weight:700;margin:18px 0 2px}
+.step-desc{font-size:.85rem;color:var(--text-mid);margin-bottom:16px}
+
+/* ═══════════════════════ Cards ═══════════════════════ */
+.tpl-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.tpl-card{background:var(--card);border:2px solid transparent;border-radius:var(--radius);padding:14px;cursor:pointer;transition:all .2s;box-shadow:var(--shadow)}
+.tpl-card:active{transform:scale(.97)}
+.tpl-card.selected{border-color:var(--orange);background:var(--orange-light)}
+.tpl-card .icon{font-size:1.6rem;display:block;margin-bottom:2px}
+.tpl-card .name{font-weight:600;font-size:.9rem}
+.tpl-card .brief{font-size:.75rem;color:var(--text-mid);margin-top:2px}
+
+/* ═══════════════════════ Form Fields ═══════════════════════ */
+.field-group{background:var(--card);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.field-group.compact{padding:10px 14px}
+.field-label{display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:500;margin-bottom:4px}
+.field-label .help{cursor:pointer;display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:var(--bg);color:var(--text-mid);font-size:.6rem;font-weight:700;transition:all .15s}
+.field-label .help:active{background:var(--orange);color:#fff}
+.field-row{display:flex;align-items:center;gap:8px}
+.field-row input{flex:1;border:1.5px solid #e8e3dd;border-radius:var(--radius-sm);padding:10px 12px;font-size:1rem;outline:none;transition:border .2s;background:var(--bg);min-width:0}
+.field-row input:focus{border-color:var(--orange);background:#fff}
+.field-row input[type=number]{-moz-appearance:textfield}
+.field-row input::-webkit-outer-spin-button,
+.field-row input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.field-row .unit{font-size:.85rem;color:var(--text-light);white-space:nowrap;min-width:fit-content}
+.hint{font-size:.72rem;color:var(--text-mid);margin-top:4px}
+.sub-label{font-size:.75rem;color:var(--text-mid);margin-top:4px}
+.sub-field{display:flex;align-items:center;gap:8px;margin-top:6px}
+.sub-field input{flex:1;border:1.5px solid #e8e3dd;border-radius:var(--radius-sm);padding:8px 10px;font-size:.9rem;outline:none;background:var(--bg);transition:border .2s}
+.sub-field input:focus{border-color:var(--orange);background:#fff}
+.sub-field .unit{font-size:.8rem;color:var(--text-light)}
+
+/* ═══════════════════════ Help Popover ═══════════════════════ */
+.help-pop{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:99;background:rgba(0,0,0,0.3);align-items:center;justify-content:center;padding:20px}
+.help-pop.show{display:flex}
+.help-pop .box{background:var(--card);border-radius:var(--radius);padding:24px 20px;max-width:380px;width:100%;animation:fadeUp .25s ease}
+.help-pop .box h3{font-size:1rem;font-weight:600;margin-bottom:8px}
+.help-pop .box p{font-size:.85rem;color:var(--text-mid);line-height:1.7}
+.help-pop .box .close{display:block;margin-top:14px;padding:8px;width:100%;border:none;border-radius:var(--radius-sm);background:var(--orange);color:#fff;font-weight:600;font-size:.9rem;cursor:pointer}
+
+/* ═══════════════════════ Bottom Nav ═══════════════════════ */
+.bottom-nav{position:fixed;bottom:0;left:0;width:100%;background:var(--card);padding:12px 16px;z-index:30;box-shadow:0 -2px 12px rgba(0,0,0,0.06);display:flex;gap:12px}
+.bottom-nav .btn{flex:1;padding:12px;border:none;border-radius:var(--radius-sm);font-weight:600;font-size:.95rem;cursor:pointer;transition:all .15s}
+.bottom-nav .btn:active{transform:scale(.97)}
+.bottom-nav .btn-prev{background:var(--bg);color:var(--text)}
+.bottom-nav .btn-next{background:var(--orange);color:#fff}
+.bottom-nav .btn-next:disabled{background:var(--text-light);cursor:not-allowed}
+
+/* ═══════════════════════ Report ═══════════════════════ */
+.report{display:none}
+.report.active{display:block}
+
+.report-hero{border-radius:var(--radius);padding:24px 20px;text-align:center;margin-bottom:14px}
+.report-hero.loss{background:var(--red-light)}
+.report-hero.warn{background:#fef6e8}
+.report-hero.profit{background:var(--green-light)}
+.report-hero .label{font-size:.8rem;color:var(--text-mid);margin-bottom:2px}
+.report-hero .amount{font-size:2.2rem;font-weight:800}
+.report-hero .amount.prefix{font-size:1rem;font-weight:400;margin-right:2px}
+.report-hero .status{font-size:.85rem;margin-top:4px}
+.report-hero.loss .amount,.report-hero.loss .status{color:var(--red)}
+.report-hero.warn .amount,.report-hero.warn .status{color:var(--orange)}
+.report-hero.profit .amount,.report-hero.profit .status{color:var(--green)}
+
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.metric{background:var(--card);border-radius:var(--radius-sm);padding:12px 14px;box-shadow:var(--shadow)}
+.metric.full{grid-column:1/-1}
+.metric .m-label{font-size:.72rem;color:var(--text-mid);margin-bottom:1px}
+.metric .m-val{font-size:1.2rem;font-weight:700}
+.metric .m-val.small{font-size:.95rem}
+.metric .m-val.red{color:var(--red)}
+.metric .m-val.green{color:var(--green)}
+.metric .m-val.orange{color:var(--orange)}
+
+.pitfalls{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.pitfalls h3{font-size:.9rem;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.pitfalls ul{list-style:none;padding:0}
+.pitfalls li{padding:8px 10px;margin-bottom:6px;border-radius:var(--radius-sm);font-size:.82rem;line-height:1.5;background:#fef9ed;border-left:3px solid var(--orange)}
+.pitfalls li.danger{background:var(--red-light);border-left-color:var(--red)}
+.pitfalls li.info{background:var(--green-light);border-left-color:var(--green)}
+
+.disclaimer{font-size:.7rem;color:var(--text-light);text-align:center;padding:20px 0 10px;line-height:1.7}
+
+/* ═══════════════════════ Report Detail（公式展开）═══════════════ */
+.formula-box{background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.formula-box h3{font-size:.9rem;font-weight:600;margin-bottom:8px}
+.formula-line{font-size:.78rem;color:var(--text-mid);padding:3px 0;display:flex;justify-content:space-between;gap:8px}
+.formula-line .fl-label{flex-shrink:0}
+.formula-line .fl-val{font-weight:500;color:var(--text);text-align:right}
+
+/* ═══════════════════════ City Tier Selector ═══════════════════════ */
+.city-row{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.city-row label{font-size:.85rem;font-weight:500;white-space:nowrap}
+.city-row select{flex:1;border:1.5px solid #e8e3dd;border-radius:var(--radius-sm);padding:10px 12px;font-size:.9rem;outline:none;background:var(--bg);transition:border .2s;appearance:auto}
+.city-row select:focus{border-color:var(--orange);background:#fff}
+.city-badge{font-size:.7rem;color:var(--text-mid);background:var(--bg);padding:2px 8px;border-radius:10px;white-space:nowrap}
+
+/* ═══════════════════════ Feedback Modal ═══════════════════════ */
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;z-index:100;background:rgba(0,0,0,0.35);align-items:center;justify-content:center;padding:20px}
+.modal.show{display:flex}
+.modal-content{background:var(--card);border-radius:var(--radius);padding:28px 24px;max-width:360px;width:100%;animation:fadeUp .25s ease;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.15)}
+.modal-content .close{position:absolute;top:12px;right:16px;font-size:1.4rem;color:var(--text-light);cursor:pointer;line-height:1}
+.modal-content h3{font-size:1rem;font-weight:600;margin-bottom:8px;margin-top:0}
+.modal-content p{font-size:.8rem;color:var(--text-mid);margin-bottom:14px}
+.modal-content input{width:100%;border:1.5px solid #e8e3dd;border-radius:var(--radius-sm);padding:10px 12px;font-size:.95rem;outline:none;margin-bottom:12px;transition:border .2s}
+.modal-content input:focus{border-color:var(--orange)}
+.modal-content button{width:100%;padding:12px;border:none;border-radius:var(--radius-sm);background:var(--orange);color:#fff;font-weight:600;font-size:.95rem;cursor:pointer;transition:all .15s}
+.modal-content button:active{transform:scale(.97)}
+.feedback-link{text-align:center;margin:12px 0 4px;font-size:.82rem;color:var(--text-mid);cursor:pointer}
+.feedback-link span{color:var(--orange);text-decoration:underline}
+.feedback-link:hover span{color:var(--orange-dark)}
+
+/* ═══════════════════════ Button ═══════════════════════ */
+.btn-dl{width:100%;padding:14px;border:none;border-radius:var(--radius-sm);font-weight:600;font-size:1rem;background:var(--text);color:#fff;cursor:pointer;transition:all .15s;margin-bottom:10px}
+.btn-dl:active{transform:scale(.97);opacity:.9}
+
+/* ═══════════════════════ Responsive ═══════════════════════ */
+@media(max-width:400px){
+  .tpl-grid{grid-template-columns:1fr}
+  .wrap{padding:0 12px}
+  .metrics{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ Header ═══ -->
+<header>
+<div class="header-inner">
+  <h1>📋 小生意创业防坑计算器</h1>
+  <span class="badge">v1.0</span>
+</div>
+</header>
+
+<!-- ═══ Steps Bar ═══ -->
+<div class="steps" id="stepsBar">
+  <div class="step-item active" data-s="0"><span class="dot">1</span>选行业</div>
+  <div class="step-item" data-s="1"><span class="dot">2</span>启动投入</div>
+  <div class="step-item" data-s="2"><span class="dot">3</span>月固定支出</div>
+  <div class="step-item" data-s="3"><span class="dot">4</span>收入预估</div>
+  <div class="step-item" data-s="4"><span class="dot">5</span>报告</div>
+</div>
+
+<!-- ═══ Main ═══ -->
+<div class="wrap" id="app">
+
+<!-- ======== Step 0: 选行业 ======== -->
+<div class="step active" data-step="0">
+  <div class="step-title">选择行业模板</div>
+  <div class="step-desc">选择一个与你想做的生意最接近的行业，默认数据可后续调整</div>
+  <!-- 城市等级 -->
+  <div class="city-row">
+    <label for="cityTier">📍 所在城市：</label>
+    <select id="cityTier">
+      <option value="1">一线城市 (北上广深)</option>
+      <option value="2" selected>二线城市 (省会/发达地级市)</option>
+      <option value="3">三四线及县城</option>
+    </select>
+    <span class="city-badge" id="cityBadge">基准</span>
+  </div>
+  <div class="tpl-grid" id="tplGrid"></div>
+</div>
+
+<!-- ======== Step 1: 启动投入 ======== -->
+<div class="step" data-step="1">
+  <div class="step-title">💰 启动投入</div>
+  <div class="step-desc">一次性投入成本（填写真实或预估金额）</div>
+  <div id="s1Fields"></div>
+</div>
+
+<!-- ======== Step 2: 月度固定支出 ======== -->
+<div class="step" data-step="2">
+  <div class="step-title">📆 月度固定支出</div>
+  <div class="step-desc">每月雷打不动的开销</div>
+  <div id="s2Fields"></div>
+</div>
+
+<!-- ======== Step 3: 收入预估 ======== -->
+<div class="step" data-step="3">
+  <div class="step-title">📈 收入预估</div>
+  <div class="step-desc">估算日常流水</div>
+  <div id="s3Fields"></div>
+</div>
+
+<!-- ======== Step 4: 报告 ======== -->
+<div class="step" data-step="4">
+  <div class="step-title" id="reportTitle">📊 盈亏报告</div>
+  <div id="reportArea"></div>
+  <button class="btn-dl" id="dlBtn">🖼️ 生成结果卡片 (PNG)</button>
+  <div class="feedback-link" onclick="openFeedback()">
+    没找到你的行业？<span>点这里告诉我们</span>
+  </div>
+  <div class="disclaimer">本工具仅为模拟估算与创业常识教育目的，不构成任何投资建议。实际经营需结合市场调研与专业意见。</div>
+</div>
+
+<!-- ═══ 行业反馈弹窗 ═══ -->
+<div class="modal" id="feedbackModal">
+  <div class="modal-content">
+    <span class="close" onclick="closeFeedback()">&times;</span>
+    <h3>🙋 我们希望帮到你</h3>
+    <p>没找到你想要的行业？告诉我们，我们会考虑添加。</p>
+    <input type="text" id="newIndustryInput" placeholder="输入你想计算的行业，如：奶茶店">
+    <button onclick="submitFeedback()">提交建议</button>
+    <p style="font-size:12px;color:#888;margin-top:10px;margin-bottom:0;">我们仅收集行业建议，不会关联个人信息。</p>
+  </div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- ═══ Bottom Nav ═══ -->
+<div class="bottom-nav">
+  <button class="btn btn-prev" id="prevBtn">← 上一步</button>
+  <button class="btn btn-next" id="nextBtn">下一步 →</button>
+</div>
+
+<!-- ═══ Help Popover ═══ -->
+<div class="help-pop" id="helpPop"><div class="box" id="helpBox"></div></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   小生意创业防坑盈亏计算器 — 完整计算引擎 & UI
+   ═══════════════════════════════════════════════════════════════ */
+
+// ─── 行业模板数据 ──────────────────────────────────────────
+const TEMPLATES = [
+  {
+    id:'fried-chicken', name:'炸鸡小吃店', icon:'🍗',
+    defaults:{
+      device:15000, deviceLife:60,      // 设备1.5万，折旧5年(60月)
+      renovation:20000, renovationLife:36, // 装修2万，摊销3年(36月)
+      stock:8000, license:2000, transfer:10000,
+      rent:8000, staffCnt:1, staffWage:5000, bossWage:8000,
+      utilities:3000, promo:0,
+      materialRate:35, unitPrice:18,
+      weekdayFlow:60, weekendFlow:100, daysPerMonth:26,
+      onlinePct:30, platformFee:20,
+      deliveryCost:0, deliveryPct:0,
+      extraFixed:0, expectedSalary:8000,
+    },
+    pitfalls:[
+      '设备二手折价厉害，算投入时按残值估算',
+      '原材料浪费率可能高达8%-10%',
+      '忽略油烟净化器电费等高功率设备',
+      '外卖平台抽佣20%以上且活动成本高',
+      '转让费需查周边真实成交价，常虚高30%-50%',
+      '淡旺季客流差异大，夏季高峰期后腰斩',
+      '食品安全风险可能被罚款',
+    ],
+    brief:'设备1.5w·房租8k/月·客单价18元',
+  },
+  {
+    id:'convenience', name:'社区便利店', icon:'🏪',
+    defaults:{
+      device:12000, deviceLife:60,
+      renovation:5000, renovationLife:36,
+      stock:30000, license:0, transfer:5000,
+      rent:10000, staffCnt:1, staffWage:4000, bossWage:6000,
+      utilities:2000, promo:0,
+      materialRate:70, unitPrice:25,
+      weekdayFlow:80, weekendFlow:120, daysPerMonth:30,
+      onlinePct:0, platformFee:0,
+      deliveryCost:0, deliveryPct:0,
+      extraFixed:0, expectedSalary:6000,
+    },
+    pitfalls:[
+      '香烟利润极低仅5%-8%，大量占款',
+      '饮料乳品等有保质期，过期损耗率约3%',
+      '周边连锁便利店低价竞争严重',
+      '库存管理不善导致滞销商品积压',
+      '盗抢损耗未计算(行业约0.5%-1%)',
+      '烟草证代办难度和费用',
+      '社区团购对实体冲击大',
+    ],
+    brief:'进货3w·房租1w/月·客单价25元',
+  },
+  {
+    id:'housekeeping', name:'家政中介', icon:'🧹',
+    defaults:{
+      device:3000, deviceLife:36,
+      renovation:0, renovationLife:36,
+      stock:0, license:1000, transfer:0,
+      rent:3000, staffCnt:0, staffWage:0, bossWage:6000,
+      utilities:1000, promo:2000,
+      materialRate:0, unitPrice:300,
+      weekdayFlow:0, weekendFlow:0, daysPerMonth:30,
+      onlinePct:0, platformFee:0,
+      deliveryCost:0, deliveryPct:0,
+      extraFixed:0, expectedSalary:6000,
+      monthlyOrders:30,
+    },
+    pitfalls:[
+      '人员流动性极大，招聘培训成本高',
+      '客户跳单私下交易损失不小',
+      '出现事故需承担连带责任',
+      '需缴纳保证金或购买责任险',
+      '推广获客成本逐年上涨',
+      '账期导致现金流紧张',
+      '投诉纠纷处理耗费大量精力',
+    ],
+    brief:'办公0.3w·房租3k/月·客单价300(抽佣)',
+  },
+  {
+    id:'social-media', name:'自媒体带货', icon:'📱',
+    defaults:{
+      device:5000, deviceLife:24,
+      renovation:0, renovationLife:36,
+      stock:0, license:0, transfer:0,
+      rent:0, staffCnt:0, staffWage:0, bossWage:8000,
+      utilities:0, promo:5000,
+      materialRate:40, unitPrice:80,
+      weekdayFlow:0, weekendFlow:0, daysPerMonth:30,
+      onlinePct:100, platformFee:5,
+      deliveryCost:0, deliveryPct:0,
+      extraFixed:0, expectedSalary:8000,
+      monthlySales:150, sampleCost:3000,
+    },
+    pitfalls:[
+      '流量波动极大，可能连续多天无单',
+      '平台规则变化导致限流封号',
+      '退货退款率可能达10%-20%',
+      '素材制作时间成本常被忽略',
+      '囤货风险虽小但账期长',
+      '投流ROI不稳定容易亏损',
+      '竞争对手恶意差评影响权重',
+    ],
+    brief:'设备0.5w·投流5k/月·客单价80/件',
+  },
+  {
+    id:'bakery', name:'烘焙私房', icon:'🥖',
+    defaults:{
+      device:6000, deviceLife:36,
+      renovation:0, renovationLife:36,
+      stock:2000, license:1000, transfer:0,
+      rent:0, staffCnt:0, staffWage:0, bossWage:6000,
+      utilities:1500, promo:0,
+      materialRate:30, unitPrice:120,
+      weekdayFlow:0, weekendFlow:0, daysPerMonth:30,
+      onlinePct:60, platformFee:0,
+      deliveryCost:5, deliveryPct:60,
+      extraFixed:0, expectedSalary:6000,
+      monthlyOrders:40,
+    },
+    pitfalls:[
+      '原料采购量小单价高无优势',
+      '纯手工产能瓶颈严重',
+      '食品安全及标签规范风险',
+      '季节产品集中，设备闲置期长',
+      '配送包装易损导致投诉',
+      '口碑依赖强，起步期难获客',
+      '家庭制作需注意邻居投诉和执照问题',
+    ],
+    brief:'设备0.6w·原料2k·客单价120/单',
+  },
+  {
+    id:'pet-grooming', name:'宠物美容店', icon:'🐾',
+    defaults:{
+      device:8000, deviceLife:48, renovation:15000, renovationLife:36,
+      stock:3000, license:1000, transfer:3000,
+      rent:5000, staffCnt:1, staffWage:4000, bossWage:7000,
+      utilities:2000, promo:0, extraFixed:0,
+      materialRate:8, unitPrice:120,
+      weekdayFlow:5, weekendFlow:10, daysPerMonth:26,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:7000,
+    },
+    pitfalls:[
+      '宠物咬伤抓伤风险需买保险',
+      '节假日寄养需求集中但平时冷清',
+      '美容师技术流失客源随之流失',
+      '异味噪音容易引起邻居投诉',
+      '设备耗材(刀头等)更换频繁',
+      '宠物猝死等意外纠纷处理',
+      '线上低价团购冲击利润',
+    ],
+    brief:'设备0.8w·房租5k/月·客单价120/只',
+  },
+  {
+    id:'car-wash', name:'洗车店(路边小型)', icon:'🚗',
+    defaults:{
+      device:10000, deviceLife:48, renovation:10000, renovationLife:36,
+      stock:2000, license:1000, transfer:0,
+      rent:3000, staffCnt:2, staffWage:4000, bossWage:6000,
+      utilities:4000, promo:0, extraFixed:0,
+      materialRate:10, unitPrice:30,
+      weekdayFlow:40, weekendFlow:60, daysPerMonth:28,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:6000,
+    },
+    pitfalls:[
+      '严重依赖天气，雨季收入骤降',
+      '节水环保要求可能被罚款',
+      '排水许可证易被忽略',
+      '低价竞争激烈利润薄',
+      '员工操作不当致车损需赔偿',
+      '场地需有排污条件租房前确认',
+      '客户等车时需提供休息区成本',
+    ],
+    brief:'设备1w·租金3k/月·客单价30元/辆',
+  },
+  {
+    id:'breakfast-stall', name:'早餐摊(煎饼/包子)', icon:'🥟',
+    defaults:{
+      device:4000, deviceLife:36, renovation:0, renovationLife:36,
+      stock:1000, license:1000, transfer:0,
+      rent:2000, staffCnt:1, staffWage:3000, bossWage:6000,
+      utilities:1000, promo:0, extraFixed:0,
+      materialRate:30, unitPrice:8,
+      weekdayFlow:100, weekendFlow:80, daysPerMonth:26,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:6000,
+    },
+    pitfalls:[
+      '无固定摊位可能被城管查处',
+      '极端天气出摊量减少',
+      '凌晨准备辛苦且人工难请',
+      '食品安全检查严格',
+      '客单价低必须靠高客流',
+      '品类单一复购下降风险',
+      '周边竞争对手极易模仿',
+    ],
+    brief:'设备0.4w·摊位费2k/月·客单价8元',
+  },
+  {
+    id:'phone-repair', name:'手机维修店', icon:'🔧',
+    defaults:{
+      device:5000, deviceLife:36, renovation:3000, renovationLife:36,
+      stock:10000, license:1000, transfer:0,
+      rent:4000, staffCnt:0, staffWage:0, bossWage:7000,
+      utilities:1000, promo:0, extraFixed:0,
+      materialRate:40, unitPrice:200,
+      weekdayFlow:5, weekendFlow:4, daysPerMonth:28,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:7000,
+    },
+    pitfalls:[
+      '配件质量难辨，劣质配件返修率高',
+      '品牌授权难拿，原装件贵',
+      '同行压价竞争，报价透明利润低',
+      '维修失误需赔屏赔主板',
+      '客户隐私数据泄露风险',
+      '技术迭代快需不断学习',
+      '线上引流成本高依赖口碑',
+    ],
+    brief:'配件1w·房租4k/月·维修客单价200',
+  },
+  {
+    id:'flower-shop', name:'鲜花店(工作室)', icon:'💐',
+    defaults:{
+      device:5000, deviceLife:48, renovation:8000, renovationLife:36,
+      stock:3000, license:1000, transfer:0,
+      rent:5000, staffCnt:1, staffWage:4000, bossWage:6000,
+      utilities:1000, promo:0, extraFixed:0,
+      materialRate:35, unitPrice:150,
+      weekdayFlow:8, weekendFlow:15, daysPerMonth:26,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:6000,
+    },
+    pitfalls:[
+      '花材损耗率极高(10%-20%)',
+      '节日备货资金压力大，节后冷清',
+      '保鲜冷库电费高昂',
+      '配送成本高且易损坏',
+      '对花艺师依赖强，个人离开影响大',
+      '线上花束退换率高',
+      '房东可能限制特殊气味',
+    ],
+    brief:'冷柜5k·房租5k/月·客单价150/束',
+  },
+  {
+    id:'dry-clean', name:'干洗店(社区收衣)', icon:'👔',
+    defaults:{
+      device:40000, deviceLife:72, renovation:10000, renovationLife:36,
+      stock:0, license:1000, transfer:0,
+      rent:6000, staffCnt:1, staffWage:4000, bossWage:6000,
+      utilities:3000, promo:0, extraFixed:0,
+      materialRate:15, unitPrice:30,
+      weekdayFlow:40, weekendFlow:40, daysPerMonth:30,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:6000,
+      franchiseFee:10000,
+    },
+    pitfalls:[
+      '设备故障维修费极高',
+      '淡季(夏季)单量少',
+      '衣物损坏赔偿纠纷多',
+      '洗涤溶剂的环保检查',
+      '连锁加盟品牌抽成高',
+      '周边自助洗衣柜竞争',
+      '顾客衣物口袋物品清理风险',
+    ],
+    brief:'设备4w·房租6k/月·均价30元/件',
+  },
+  {
+    id:'milk-tea', name:'奶茶店(小型档口)', icon:'🧋',
+    defaults:{
+      device:30000, deviceLife:48, renovation:20000, renovationLife:36,
+      stock:10000, license:2000, transfer:5000,
+      rent:10000, staffCnt:2, staffWage:4000, bossWage:8000,
+      utilities:4000, promo:0, extraFixed:0,
+      materialRate:30, unitPrice:15,
+      weekdayFlow:120, weekendFlow:180, daysPerMonth:30,
+      onlinePct:40, platformFee:20, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:8000,
+      franchiseFee:20000,
+    },
+    pitfalls:[
+      '品牌更新极快，需不断推新品',
+      '高糖健康趋势影响需求',
+      '外卖平台抽佣+满减导致实收低',
+      '排队效应退去后客流下降',
+      '原材料浪费和过期',
+      '加盟总部不兑现扶持',
+      '卫生/消防检查频繁',
+    ],
+    brief:'设备3w·房租1w/月·每日客流120+',
+  },
+  {
+    id:'courier-station', name:'快递驿站', icon:'📦',
+    defaults:{
+      device:5000, deviceLife:36, renovation:3000, renovationLife:36,
+      stock:0, license:1000, transfer:0,
+      rent:3000, staffCnt:0, staffWage:0, bossWage:6000,
+      utilities:1000, promo:0, extraFixed:0,
+      materialRate:5, unitPrice:0,
+      weekdayFlow:0, weekendFlow:0, daysPerMonth:30,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:6000,
+      sendFee:0.4, receiveFee:3, sendDaily:500, receiveDaily:20,
+    },
+    pitfalls:[
+      '派件单价低完全靠量',
+      '快递公司政策随时变',
+      '丢件破损全额赔偿',
+      '超时取件纠纷投诉',
+      '双十一爆仓压力大',
+      '社区关系不好或被投诉扰民',
+      '包裹堆积安全消防隐患',
+    ],
+    brief:'设备0.5w·房租3k/月·派件500件/天',
+  },
+  {
+    id:'nail-salon', name:'美甲店', icon:'💅',
+    defaults:{
+      device:8000, deviceLife:48, renovation:15000, renovationLife:36,
+      stock:5000, license:1000, transfer:3000,
+      rent:6000, staffCnt:1, staffWage:5000, bossWage:8000,
+      utilities:1500, promo:0, extraFixed:0,
+      materialRate:15, unitPrice:150,
+      weekdayFlow:6, weekendFlow:12, daysPerMonth:26,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:8000,
+    },
+    pitfalls:[
+      '美甲师技术是核心，流失带走客户',
+      '款式更新极快，需不断买新色胶',
+      '顾客过敏或受伤纠纷',
+      '价格战严重，团购拉低利润',
+      '耗材损耗和卫生要求高',
+      '需持续在社交媒体发布作品引流',
+      '顾客久坐需提供舒适环境增加成本',
+    ],
+    brief:'设备0.8w·房租6k/月·客单价150/人',
+  },
+  {
+    id:'scrap-recycle', name:'废品回收站(社区)', icon:'♻️',
+    defaults:{
+      device:3000, deviceLife:60, renovation:10000, renovationLife:36,
+      stock:20000, license:1000, transfer:0,
+      rent:4000, staffCnt:1, staffWage:5000, bossWage:7000,
+      utilities:1000, promo:0, extraFixed:3000,
+      materialRate:60, unitPrice:0,
+      weekdayFlow:0, weekendFlow:0, daysPerMonth:30,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:7000,
+      monthlyRevenueInput:50000, marginRate:40,
+    },
+    pitfalls:[
+      '废品回收价格波动大需关注行情',
+      '货物分类分拣费时费力',
+      '消防与环保检查严格',
+      '纸皮、塑料等受潮掉秤损失',
+      '收赃风险需严格登记',
+      '社区内设点可能有异味投诉',
+      '上游打包站远则运输成本高',
+    ],
+    brief:'启动收货款2w·租金4k/月·月流水5w',
+  },
+  {
+    id:'fruit-veg', name:'社区果蔬店', icon:'🥬',
+    defaults:{
+      device:10000, deviceLife:60, renovation:8000, renovationLife:36,
+      stock:15000, license:1000, transfer:0,
+      rent:8000, staffCnt:1, staffWage:4000, bossWage:7000,
+      utilities:3000, promo:0, extraFixed:0,
+      materialRate:70, unitPrice:20,
+      weekdayFlow:120, weekendFlow:150, daysPerMonth:30,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:7000,
+      spoilageRate:15,
+    },
+    pitfalls:[
+      '生鲜损耗控制是生命线(通常10%-20%)',
+      '进货品质和价格依赖凌晨去批发市场',
+      '社区团购/生鲜电商冲击大',
+      '冷柜等设备电费高',
+      '果蔬摆放美观需要人力',
+      '天气影响供需和价格',
+      '过期处理不当可能被投诉',
+    ],
+    brief:'货架冷柜1w·房租8k/月·客单价20元',
+  },
+  {
+    id:'braised-food', name:'卤味熟食摊', icon:'🍗',
+    defaults:{
+      device:4000, deviceLife:36, renovation:2000, renovationLife:24,
+      stock:3000, license:1000, transfer:0,
+      rent:1500, staffCnt:1, staffWage:3000, bossWage:6000,
+      utilities:1000, promo:0, extraFixed:0,
+      materialRate:35, unitPrice:15,
+      weekdayFlow:60, weekendFlow:80, daysPerMonth:26,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:6000,
+    },
+    pitfalls:[
+      '卤水保养不善易变质造成浪费',
+      '加工时间长需半夜制作',
+      '口味依赖师傅或稳定配方',
+      '天气热售卖窗口短，易坏',
+      '熟食证照审核相对严格',
+      '无固定摊位可能被查处',
+      '竞争激烈需独特口味或价格优势',
+    ],
+    brief:'设备0.4w·摊位费1.5k/月·客单价15元',
+  },
+  {
+    id:'print-shop', name:'图文快印店', icon:'🖨️',
+    defaults:{
+      device:20000, deviceLife:48, renovation:5000, renovationLife:36,
+      stock:5000, license:1000, transfer:0,
+      rent:4000, staffCnt:0, staffWage:0, bossWage:6000,
+      utilities:1000, promo:0, extraFixed:0,
+      materialRate:25, unitPrice:20,
+      weekdayFlow:40, weekendFlow:20, daysPerMonth:28,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:6000,
+    },
+    pitfalls:[
+      '设备故障维修费用高且影响接单',
+      '大型打印机折旧快',
+      '同行价格竞争极透明',
+      '标书等时效业务压力大',
+      '需不断更新设备适应新需求',
+      '学校周边旺季寒暑假波动',
+      '电子化趋势导致需求下降',
+    ],
+    brief:'设备2w·房租4k/月·客单价20元/单',
+  },
+  {
+    id:'hardware-store', name:'小五金店', icon:'🔩',
+    defaults:{
+      device:3000, deviceLife:60, renovation:3000, renovationLife:36,
+      stock:20000, license:1000, transfer:0,
+      rent:3000, staffCnt:0, staffWage:0, bossWage:5000,
+      utilities:500, promo:0, extraFixed:0,
+      materialRate:65, unitPrice:12,
+      weekdayFlow:40, weekendFlow:30, daysPerMonth:30,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:5000,
+    },
+    pitfalls:[
+      '产品极杂，库存管理困难',
+      '滞销品和生锈损耗',
+      '大卖场和线上五金低价冲击',
+      '部分危险品（胶水油漆）需特殊存储',
+      '位置多老旧社区，客流老化',
+      '需掌握附近维修需求',
+      '假冒伪劣商品风险',
+    ],
+    brief:'进货2w·房租3k/月·客单价12元',
+  },
+  {
+    id:'stationery', name:'文具店(学校周边)', icon:'✏️',
+    defaults:{
+      device:4000, deviceLife:48, renovation:6000, renovationLife:36,
+      stock:20000, license:1000, transfer:0,
+      rent:5000, staffCnt:1, staffWage:2000, bossWage:5000,
+      utilities:1000, promo:0, extraFixed:0,
+      materialRate:60, unitPrice:15,
+      weekdayFlow:50, weekendFlow:30, daysPerMonth:28,
+      onlinePct:0, platformFee:0, deliveryCost:0, deliveryPct:0,
+      monthlyOrders:0, sampleCost:0, expectedSalary:5000,
+    },
+    pitfalls:[
+      '寒暑假和周末客流锐减',
+      '学校政策变化(如禁止零食)影响',
+      '跟风流行文具生命周期短',
+      '盗版/劣质产品风险',
+      '被网购和校门口摊贩分流',
+      '库存积压大量过时贴纸卡片',
+      '需承担赊账坏账(学生口头)',
+    ],
+    brief:'进货2w·房租5k/月·客单价15元',
+  },
+];
+
+// ─── 城市等级系数 ──────────────────────────────────────
+const CITY_COEFF = {
+  1: { rent:1.5, labor:1.4, price:1.3, label:'一线城市(北上广深)' },
+  2: { rent:1.0, labor:1.0, price:1.0, label:'二线城市(省会/发达地级市)' },
+  3: { rent:0.6, labor:0.7, price:0.8, label:'三四线及县城' },
+};
+
+// ─── 通用常识提示语库 ──────────────────────────────────────
+const TIPS = {
+  transfer:'转让费非硬性成本，建议通过周边商家、中介核实，通常可砍价30%。',
+  bossWage:'不给自己开工资是常见误区，若低于原工作收入，等于变相亏损。',
+  material:'原料成本不等于毛利率，还需扣除包装、损耗、平台抽佣等。',
+  depreciation:'设备装修要算折旧摊销，每月分摊成本才能反映真实盈利。',
+  platform:'外卖或电商平台抽佣+营销费通常在15%-25%，务必计入变动成本。',
+  accountPeriod:'如果客户不是现结，资金被占用期间的利息也是成本。',
+  safety:'建议预留3-6个月固定成本的亏损预备金，未盈利前不止启动资金。',
+};
+
+// ─── 当前状态 ──────────────────────────────────────────────
+let state = {
+  currentStep: 0,
+  template: null,
+  // 启动投入
+  device:0, deviceLife:60, renovation:0, renovationLife:36,
+  stock:0, license:0, transfer:0,
+  // 月度固定
+  rent:0, staffCnt:0, staffWage:0, bossWage:0,
+  utilities:0, promo:0, extraFixed:0,
+  // 收入
+  materialRate:35, unitPrice:18,
+  weekdayFlow:60, weekendFlow:100, daysPerMonth:26,
+  onlinePct:0, platformFee:0,
+  deliveryCost:0, deliveryPct:0,
+  monthlyOrders:30, sampleCost:0,
+  franchiseFee:0,
+  sendFee:0, receiveFee:0, sendDaily:0, receiveDaily:0,
+  monthlyRevenueInput:0, marginRate:0, spoilageRate:0,
+  expectedSalary:6000,
+  cityTier: 2,
+  // 计算结果
+  result:null,
+};
+
+// ─── DOM 引用 ──────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const tplGrid = $('tplGrid');
+const s1Fields = $('s1Fields');
+const s2Fields = $('s2Fields');
+const s3Fields = $('s3Fields');
+const reportArea = $('reportArea');
+const prevBtn = $('prevBtn');
+const nextBtn = $('nextBtn');
+const stepsBar = $('stepsBar');
+const helpPop = $('helpPop');
+const helpBox = $('helpBox');
+
+// ─── 渲染：行业模板选择 ──────────────────────────────────
+function renderTemplates(){
+  tplGrid.innerHTML = TEMPLATES.map(t => `
+    <div class="tpl-card${state.template?.id===t.id?' selected':''}" data-id="${t.id}">
+      <span class="icon">${t.icon}</span>
+      <div class="name">${t.name}</div>
+      <div class="brief">${t.brief}</div>
+    </div>
+  `).join('');
+  tplGrid.querySelectorAll('.tpl-card').forEach(el => {
+    el.addEventListener('click',()=>{
+      const t = TEMPLATES.find(x => x.id === el.dataset.id);
+      if(!t) return;
+      state.template = t;
+      applyDefaults(t);
+      renderTemplates();
+      renderStep1(); renderStep2(); renderStep3();
+      checkNextable();
+    });
+  });
+}
+
+// ─── 应用模板默认值（含城市等级系数调整） ───────────────
+function applyDefaults(t){
+  const d = t.defaults;
+  const cc = CITY_COEFF[state.cityTier] || CITY_COEFF[2];
+  state.device = d.device; state.deviceLife = d.deviceLife;
+  state.renovation = d.renovation; state.renovationLife = d.renovationLife;
+  state.stock = d.stock; state.license = d.license; state.transfer = d.transfer;
+  // 城市等级影响：房租、人工、客单价
+  state.rent = Math.round(d.rent * cc.rent);
+  state.staffCnt = d.staffCnt;
+  state.staffWage = Math.round(d.staffWage * cc.labor);
+  state.bossWage = Math.round(d.bossWage * cc.labor);
+  state.utilities = d.utilities; state.promo = d.promo;
+  state.extraFixed = d.extraFixed;
+  state.materialRate = d.materialRate;
+  state.unitPrice = Math.round(d.unitPrice * cc.price);
+  state.weekdayFlow = d.weekdayFlow; state.weekendFlow = d.weekendFlow;
+  state.daysPerMonth = d.daysPerMonth;
+  state.onlinePct = d.onlinePct; state.platformFee = d.platformFee;
+  state.deliveryCost = d.deliveryCost; state.deliveryPct = d.deliveryPct;
+  state.monthlyOrders = d.monthlyOrders || 30;
+  state.sampleCost = d.sampleCost || 0;
+  state.franchiseFee = d.franchiseFee || 0;
+  state.sendFee = d.sendFee || 0;
+  state.receiveFee = d.receiveFee || 0;
+  state.sendDaily = d.sendDaily || 0;
+  state.receiveDaily = d.receiveDaily || 0;
+  state.monthlyRevenueInput = d.monthlyRevenueInput || 0;
+  state.marginRate = d.marginRate || 0;
+  state.spoilageRate = d.spoilageRate || 0;
+  state.expectedSalary = Math.round(d.expectedSalary * cc.labor);
+}
+
+// ─── 通用：创建输入字段 ──────────────────────────────────
+function mkField(id, label, unit, val, opts={}){
+  const {sub,subUnit,subLabel,subVal,hint,helpKey,type='number'} = opts;
+  const unitStr = unit ? `<span class="unit">${unit}</span>` : '';
+  const helpBtn = helpKey ? `<span class="help" data-key="${helpKey}">?</span>` : '';
+  let subHtml = '';
+  if(sub!==undefined){
+    subHtml = `<div class="sub-field">
+      <span class="sub-label">${subLabel||''}</span>
+      <input type="${type}" id="${id}_sub" value="${sub}" ${type==='number'?'min="0"':''}>
+      ${subUnit ? `<span class="unit">${subUnit}</span>` : ''}
+    </div>`;
+  }
+  return `<div class="field-group${opts.compact?' compact':''}">
+    <div class="field-label">${label} ${helpBtn}</div>
+    <div class="field-row">
+      <input type="${type}" id="${id}" value="${val}" ${type==='number'?'min="0"':''}>
+      ${unitStr}
+    </div>
+    ${hint ? `<div class="hint">${hint}</div>` : ''}
+    ${subHtml}
+  </div>`;
+}
+
+// ─── 渲染：步骤1 启动投入 ────────────────────────────────
+function renderStep1(){
+  const t = state.template;
+  if(!t){ s1Fields.innerHTML='<p style="color:var(--text-mid)">请先选择行业模板</p>'; return; }
+  s1Fields.innerHTML = [
+    mkField('s1_device','设备购置','元',state.device,{helpKey:'depreciation',hint:`折旧 ${state.deviceLife} 个月（${(state.device/state.deviceLife).toFixed(0)}元/月）`}),
+    mkField('s1_renovation','装修','元',state.renovation,{helpKey:'depreciation',hint:`摊销 ${state.renovationLife} 个月（${(state.renovation/state.renovationLife).toFixed(0)}元/月）`}),
+    mkField('s1_stock','首批进货','元',state.stock,{hint:'含原材料/商品库存'}),
+    mkField('s1_license','证照费','元',state.license),
+    mkField('s1_transfer','转让费/押金','元',state.transfer,{helpKey:'transfer',hint:'可选，若无需填0'}),
+    (state.franchiseFee>0 ? mkField('s1_franchise','加盟/品牌费','元',state.franchiseFee,{hint:'可选，若无需填0'}) : ''),
+  ].join('');
+  bindStep1();
+}
+
+function bindStep1(){
+  bindNum('s1_device',v=>state.device=v);
+  bindNum('s1_renovation',v=>state.renovation=v);
+  bindNum('s1_stock',v=>state.stock=v);
+  bindNum('s1_license',v=>state.license=v);
+  bindNum('s1_transfer',v=>state.transfer=v);
+  bindNum('s1_franchise',v=>state.franchiseFee=v);
+}
+
+// ─── 渲染：步骤2 月度固定支出 ─────────────────────────────
+function renderStep2(){
+  const t = state.template;
+  if(!t){ s2Fields.innerHTML='<p style="color:var(--text-mid)">请先选择行业模板</p>'; return; }
+  s2Fields.innerHTML = [
+    mkField('s2_rent','房租','元/月',state.rent,{helpKey:'safety'}),
+    mkField('s2_bossWage','老板工资','元/月',state.bossWage,{helpKey:'bossWage',hint:'给自己开工资，否则不算真实盈利'}),
+    mkField('s2_staffCnt','员工人数','人',state.staffCnt,{compact:true}),
+    mkField('s2_staffWage','员工月薪','元/人',state.staffWage,{hint:'平均每人月薪'}),
+    mkField('s2_utilities','水电杂费','元/月',state.utilities),
+    mkField('s2_promo','推广费','元/月',state.promo,{helpKey:'platform',hint:'广告、平台活动等'}),
+    mkField('s2_extra','其他固定支出','元/月',state.extraFixed,{hint:'如保险、耗材、软件订阅等'}),
+  ].join('');
+  bindStep2();
+}
+
+function bindStep2(){
+  bindNum('s2_rent',v=>state.rent=v);
+  bindNum('s2_bossWage',v=>state.bossWage=v);
+  bindNum('s2_staffCnt',v=>state.staffCnt=v);
+  bindNum('s2_staffWage',v=>state.staffWage=v);
+  bindNum('s2_utilities',v=>state.utilities=v);
+  bindNum('s2_promo',v=>state.promo=v);
+  bindNum('s2_extra',v=>state.extraFixed=v);
+}
+
+// ─── 渲染：步骤3 收入预估 ────────────────────────────────
+function renderStep3(){
+  const t = state.template;
+  if(!t){ s3Fields.innerHTML='<p style="color:var(--text-mid)">请先选择行业模板</p>'; return; }
+  const isFlow = ['fried-chicken','convenience','pet-grooming','car-wash','breakfast-stall','phone-repair','flower-shop','dry-clean','milk-tea','nail-salon','fruit-veg','braised-food','print-shop','hardware-store','stationery'].includes(t.id);
+  const isOrder = ['housekeeping','social-media','bakery'].includes(t.id);
+  const isCourier = t.id==='courier-station';
+  const isScrap = t.id==='scrap-recycle';
+
+  let html = '';
+  // 物料成本率（通用）
+  html += mkField('s3_material','物料成本占收入','%',state.materialRate,{helpKey:'material',hint:'含原料、包装等直接成本'});
+
+  if(isFlow){
+    // 客流模式
+    html += mkField('s3_unitPrice','客单价','元',state.unitPrice);
+    html += mkField('s3_weekday','工作日客流','人/天',state.weekdayFlow);
+    html += mkField('s3_weekend','周末客流','人/天',state.weekendFlow);
+    html += mkField('s3_days','月营业天数','天',state.daysPerMonth,{hint:'通常26-30天'});
+  }
+  if(isOrder){
+    // 订单模式
+    html += mkField('s3_unitPrice','客单价','元/单',state.unitPrice);
+    html += mkField('s3_monthlyOrders','月均订单数','单',state.monthlyOrders);
+    if(t.id==='social-media'){
+      html += mkField('s3_sampleCost','样品/素材费','元/月',state.sampleCost,{hint:'样品采购、道具等'});
+    }
+  }
+  // 线上相关（炸鸡、自媒体、烘焙、奶茶有外卖/电商）
+  if(['fried-chicken','social-media','bakery','milk-tea'].includes(t.id)){
+    html += mkField('s3_onlinePct','线上订单占比','%',state.onlinePct,{helpKey:'platform',hint:'外卖/电商订单占总收入比例'});
+    html += mkField('s3_platformFee','平台抽佣率','%',state.platformFee,{helpKey:'platform',hint:'平台抽佣百分比'});
+  }
+  if(t.id==='bakery'){
+    html += mkField('s3_delivery','配送成本','元/单',state.deliveryCost,{sub:state.deliveryPct,subUnit:'%',subLabel:'外送占比',helpKey:'safety'});
+  }
+  if(t.id==='housekeeping'){
+    html += `<div class="field-group"><div class="hint">📌 家政客单价 ${state.unitPrice}元/单（抽佣收入），月均${state.monthlyOrders}单</div></div>`;
+  }
+  // 快递驿站特殊字段
+  if(isCourier){
+    html += `
+      <div class="field-group"><div class="field-label">派件单价</div>
+        <div class="field-row"><input type="number" id="s3_sendFee" value="${state.sendFee}" min="0" step="0.1">
+        <span class="unit">元/件</span></div></div>
+      <div class="field-group"><div class="field-label">日均派件量</div>
+        <div class="field-row"><input type="number" id="s3_sendDaily" value="${state.sendDaily}" min="0">
+        <span class="unit">件/天</span></div></div>
+      <div class="field-group"><div class="field-label">收件利润</div>
+        <div class="field-row"><input type="number" id="s3_receiveFee" value="${state.receiveFee}" min="0" step="0.1">
+        <span class="unit">元/件</span></div></div>
+      <div class="field-group"><div class="field-label">日均收件量</div>
+        <div class="field-row"><input type="number" id="s3_receiveDaily" value="${state.receiveDaily}" min="0">
+        <span class="unit">件/天</span></div></div>
+      <div class="field-group"><div class="field-label">月营业天数</div>
+        <div class="field-row"><input type="number" id="s3_days" value="${state.daysPerMonth}" min="0">
+        <span class="unit">天</span></div>
+        <div class="hint">快递驿站通常30天全年无休</div></div>`;
+  }
+  // 废品回收站特殊字段
+  if(isScrap){
+    html += `
+      <div class="field-group"><div class="field-label">月均收货总价值（卖出价）</div>
+        <div class="field-row"><input type="number" id="s3_revenueInput" value="${state.monthlyRevenueInput}" min="0">
+        <span class="unit">元/月</span></div>
+        <div class="hint">废品进销差价率 ${state.marginRate}%（即物料成本率${100-state.marginRate}%已内置）</div></div>`;
+  }
+
+  s3Fields.innerHTML = html;
+  bindStep3();
+}
+
+function bindStep3(){
+  bindNum('s3_material',v=>state.materialRate=v);
+  bindNum('s3_unitPrice',v=>state.unitPrice=v);
+  bindNum('s3_weekday',v=>state.weekdayFlow=v);
+  bindNum('s3_weekend',v=>state.weekendFlow=v);
+  bindNum('s3_days',v=>state.daysPerMonth=v);
+  bindNum('s3_monthlyOrders',v=>state.monthlyOrders=v);
+  bindNum('s3_sampleCost',v=>state.sampleCost=v);
+  bindNum('s3_onlinePct',v=>state.onlinePct=v);
+  bindNum('s3_platformFee',v=>state.platformFee=v);
+  bindNum('s3_delivery',v=>state.deliveryCost=v);
+  bindNum('s3_sendFee',v=>state.sendFee=v);
+  bindNum('s3_sendDaily',v=>state.sendDaily=v);
+  bindNum('s3_receiveFee',v=>state.receiveFee=v);
+  bindNum('s3_receiveDaily',v=>state.receiveDaily=v);
+  bindNum('s3_revenueInput',v=>state.monthlyRevenueInput=v);
+  const sub = document.getElementById('s3_delivery_sub');
+  if(sub) sub.addEventListener('input',()=>{ state.deliveryPct = parseFloat(sub.value)||0; });
+}
+
+// ─── 工具：绑定数字输入 ──────────────────────────────────
+function bindNum(id, fn){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.addEventListener('input',()=>{ fn(parseFloat(el.value)||0); });
+}
+
+// ─── 检查下一步是否可点 ──────────────────────────────────
+function checkNextable(){
+  const btn = nextBtn;
+  if(state.currentStep===0){ btn.disabled = !state.template; }
+  else { btn.disabled = false; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  核心计算函数（独立、带注释）
+// ═══════════════════════════════════════════════════════════════
+
+function calc(){
+  const s = state;
+  const t = s.template;
+  if(!t) return null;
+
+  // ① 一次性投入
+  const oneTimeCost = s.device + s.renovation + s.stock + s.license + s.transfer + (s.franchiseFee||0);
+
+  // ② 月折旧摊销
+  const monthDepreciation = (s.deviceLife>0 ? s.device/s.deviceLife : 0)
+                           + (s.renovationLife>0 ? s.renovation/s.renovationLife : 0);
+
+  // ③ 月度固定成本合计 = 房租 + 人工总和 + 水电 + 折旧 + 推广 + 其他固定
+  const laborTotal = s.bossWage + (s.staffCnt * s.staffWage);
+  const monthlyFixed = s.rent + laborTotal + s.utilities + monthDepreciation + s.promo + s.extraFixed + (s.sampleCost||0);
+
+  // ④ 综合变动成本率
+  //   = 物料成本率 + (线上抽佣率 × 线上收入占比) + (配送成本率)
+  const onlineExtra = (s.onlinePct/100) * (s.platformFee/100);
+  let deliveryRate = 0;
+  if(s.unitPrice>0 && s.deliveryCost>0){
+    deliveryRate = (s.deliveryPct/100) * (s.deliveryCost / s.unitPrice);
+  }
+  const totalVariableRate = (s.materialRate/100) + onlineExtra + deliveryRate;
+
+  // ⑤ 预估月收入
+  let monthlyRevenue = 0;
+  const isFlow = ['fried-chicken','convenience','pet-grooming','car-wash','breakfast-stall','phone-repair','flower-shop','dry-clean','milk-tea','nail-salon','fruit-veg','braised-food','print-shop','hardware-store','stationery'].includes(t.id);
+  const isOrder = ['housekeeping','social-media','bakery'].includes(t.id);
+  const isCourier = t.id==='courier-station';
+  const isScrap = t.id==='scrap-recycle';
+
+  if(isScrap){
+    // 废品回收站：按月均收货总价值直接作为收入，物料成本率已含进价
+    monthlyRevenue = s.monthlyRevenueInput;
+  } else if(isCourier){
+    // 快递驿站：(派件单价×日均派件 + 收件利润×日均收件) × 月天数
+    monthlyRevenue = (s.sendFee * s.sendDaily + s.receiveFee * s.receiveDaily) * s.daysPerMonth;
+  } else if(isFlow){
+    // 客流模式：(工作日客流×工作日天数 + 周末客流×周末天数) × 客单价
+    // 月营业天数 = 工作日 + 周末，按比例分配
+    const totalDays = s.daysPerMonth;
+    // 粗略按 5:2 比例分配工作和周末
+    const workDays = Math.round(totalDays * 5/7);
+    const weekEndDays = totalDays - workDays;
+    monthlyRevenue = (s.weekdayFlow * workDays + s.weekendFlow * weekEndDays) * s.unitPrice;
+  } else if(isOrder){
+    monthlyRevenue = s.monthlyOrders * s.unitPrice;
+  }
+
+  // ⑥ 盈亏平衡月营业额
+  const breakEvenRevenue = totalVariableRate < 1
+    ? monthlyFixed / (1 - totalVariableRate)
+    : Infinity;
+
+  // ⑦ 月净利润
+  const monthlyProfit = monthlyRevenue * (1 - totalVariableRate) - monthlyFixed;
+
+  // ⑧ 回本周期
+  const paybackMonths = (monthlyProfit > 0)
+    ? Math.ceil(oneTimeCost / monthlyProfit)
+    : Infinity;
+
+  // ⑨ 净利润率
+  const profitMargin = monthlyRevenue > 0 ? (monthlyProfit / monthlyRevenue) * 100 : 0;
+
+  // ⑩ 安全边际：收入下降20%
+  const stressRevenue = monthlyRevenue * 0.8;
+  const stressProfit = stressRevenue * (1 - totalVariableRate) - monthlyFixed;
+
+  // 所需日均客流（仅客流模式）
+  let neededWeekday = 0, neededWeekend = 0;
+  if(isFlow && s.unitPrice>0){
+    const totalDays = s.daysPerMonth;
+    const workDays = Math.round(totalDays * 5/7);
+    const weekEndDays = totalDays - workDays;
+    // 盈亏平衡所需日均客流（假设周末/工作日比例不变）
+    const avgRevenuePerPerson = s.unitPrice;
+    const neededTotalFlow = breakEvenRevenue / avgRevenuePerPerson;
+    // 按当前比例分配
+    const currentTotalFlow = s.weekdayFlow * workDays + s.weekendFlow * weekEndDays;
+    if(currentTotalFlow>0){
+      const ratio = breakEvenRevenue / monthlyRevenue;
+      neededWeekday = Math.round(s.weekdayFlow * ratio);
+      neededWeekend = Math.round(s.weekendFlow * ratio);
+    }
+  }
+
+  return {
+    oneTimeCost, monthDepreciation, monthlyFixed, totalVariableRate,
+    monthlyRevenue, breakEvenRevenue, monthlyProfit, paybackMonths,
+    profitMargin, stressProfit, stressRevenue,
+    neededWeekday, neededWeekend,
+    laborTotal, onlineExtra, deliveryRate,
+    isFlow, isOrder,
+  };
+}
+
+// ─── 生成防坑建议 ──────────────────────────────────────
+function genPitfalls(r, t){
+  const tips = [];
+  const push = (msg,type='warn') => tips.push({msg,type});
+
+  // 1. 回本周期过长
+  if(r.paybackMonths>18) push(`回本周期过长(${r.paybackMonths}个月)，资金占用风险极高，请重新评估投入。`,'danger');
+  // 2. 净利润率过低
+  if(r.profitMargin<10 && r.monthlyProfit>=0) push(`净利润率过低(${r.profitMargin.toFixed(1)}%)，抵御市场波动能力弱，一件意外就会亏损。`,'danger');
+  // 3. 安全边际测试
+  if(r.stressProfit<0) push(`当收入下降20%即亏损(亏${Math.abs(r.stressProfit).toFixed(0)}元)，你的生意很脆弱，建议压缩固定成本。`,'danger');
+  // 4. 老板工资
+  if(state.bossWage < state.expectedSalary && state.bossWage>0){
+    push(`你给自己的工资(${state.bossWage}元/月)低于预期(${state.expectedSalary}元/月)，可能用热情补贴生意。`,'warn');
+  }
+  // 5. 转让费占比高
+  if(r.oneTimeCost>0 && state.transfer/r.oneTimeCost>0.4){
+    push(`转让费占比过高(${(state.transfer/r.oneTimeCost*100).toFixed(0)}%)，注意核查设备装修实际价值，防止溢价水分。`,'warn');
+  }
+  // 6. 变动成本率高
+  if(r.totalVariableRate>0.65){
+    push(`综合变动成本率(${(r.totalVariableRate*100).toFixed(0)}%)偏高，必须在高毛利产品上发力，否则很难盈利。`,'warn');
+  }
+  // 7. 线上占比高但平台费未充分考虑
+  if((state.onlinePct>50) && state.platformFee===0){
+    push(`线上占比高(${state.onlinePct}%)但未填平台抽佣率，记得计入这项隐形变动成本。`,'info');
+  }
+  // 8. 人工占比高
+  if(r.monthlyFixed>0 && r.laborTotal/r.monthlyFixed>0.5){
+    push(`人工成本占总固定支出${(r.laborTotal/r.monthlyFixed*100).toFixed(0)}%，考虑优化排班或提升人效。`,'warn');
+  }
+  // 9. 库存提示（零售类）
+  if(t.id==='convenience'||t.id==='fried-chicken'){
+    push('留意库存周转，避免资金压在货上，原材料/商品最好按周滚动进货。','info');
+  }
+  // 10. 行业特定坑点（随机1条）
+  if(t.pitfalls && t.pitfalls.length){
+    const idx = Math.floor(Math.random() * t.pitfalls.length);
+    push(`💡 ${t.pitfalls[idx]}`,'info');
+  }
+
+  // 去重（最多6条，优先danger和warn）
+  const seen = new Set();
+  const deduped = tips.filter(t=>{
+    const k = t.msg.slice(0,20);
+    if(seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+  // 按 severity 排序
+  const order = {danger:0, warn:1, info:2};
+  deduped.sort((a,b)=>order[a.type]-order[b.type]);
+  return deduped.slice(0,6);
+}
+
+// ─── 渲染报告 ──────────────────────────────────────────
+function renderReport(){
+  const r = calc();
+  if(!r) return;
+  state.result = r;
+  const t = state.template;
+
+  // 状态判定
+  let heroClass='loss', statusText='📉 亏损', amountClass='';
+  if(r.monthlyProfit>0 && r.monthlyProfit<state.expectedSalary){
+    heroClass='warn'; statusText='⚠️ 微利（低于预期工资）'; amountClass='orange';
+  } else if(r.monthlyProfit>=state.expectedSalary){
+    heroClass='profit'; statusText='✅ 盈利（达到预期）'; amountClass='green';
+  }
+  if(r.monthlyProfit<0){ heroClass='loss'; statusText='🔴 亏损'; amountClass='red'; }
+
+  const fmt = (n) => (n===Infinity||n===-Infinity||n===null||n===undefined)?'—':Math.round(n).toLocaleString();
+  const fmt1 = (n) => (typeof n!=='number'||!isFinite(n))?'—':n.toFixed(1);
+  const fmt2 = (n) => (typeof n!=='number'||!isFinite(n))?'—':n.toFixed(2);
+
+  // 防坑建议
+  const pitfalls = genPitfalls(r, t);
+
+  const pctStr = (r.totalVariableRate*100).toFixed(1);
+  const beFlowStr = r.isFlow ? `（工作日需约${r.neededWeekday}人/天，周末约${r.neededWeekend}人/天）` : '';
+
+  reportArea.innerHTML = `
+    <!-- 大色块 -->
+    <div class="report-hero ${heroClass}" id="heroBlock">
+      <div class="label">月度净利润</div>
+      <div><span class="amount ${amountClass}">${r.monthlyProfit>=0?'+':''}${fmt(r.monthlyProfit)}</span><span style="font-size:.9rem;color:var(--text-mid)"> 元/月</span></div>
+      <div class="status">${statusText}</div>
+    </div>
+
+    <!-- KPI 网格 -->
+    <div class="metrics">
+      <div class="metric"><div class="m-label">盈亏平衡点</div><div class="m-val small">${fmt(r.breakEvenRevenue)} 元/月${beFlowStr}</div></div>
+      <div class="metric"><div class="m-label">预估月收入</div><div class="m-val small">${fmt(r.monthlyRevenue)} 元</div></div>
+      <div class="metric"><div class="m-label">回本周期</div><div class="m-val ${r.paybackMonths===Infinity?'red':(r.paybackMonths>18?'orange':'green')}">${r.paybackMonths===Infinity?'无法回本':r.paybackMonths+'个月'}</div></div>
+      <div class="metric"><div class="m-label">净利润率</div><div class="m-val ${r.profitMargin<0?'red':(r.profitMargin<10?'orange':'green')}">${fmt1(r.profitMargin)}%</div></div>
+      <div class="metric full"><div class="m-label">安全边际（收入↓20%）</div><div class="m-val ${r.stressProfit<0?'red':'green'}">${r.stressProfit>=0?'还能赚 ':'亏损 '}${fmt(Math.abs(r.stressProfit))} 元/月</div></div>
+      <div class="metric full"><div class="m-label">综合变动成本率</div><div class="m-val ${r.totalVariableRate>0.65?'red':'green'}">${pctStr}%</div></div>
+    </div>
+
+    <!-- 公式详情 -->
+    <div class="formula-box">
+      <h3>📐 计算明细</h3>
+      <div class="formula-line"><span class="fl-label">一次性投入</span><span class="fl-val">${fmt(r.oneTimeCost)} 元</span></div>
+      <div class="formula-line"><span class="fl-label">设备折旧</span><span class="fl-val">${fmt2(r.monthDepreciation)} 元/月</span></div>
+      <div class="formula-line"><span class="fl-label">月固定成本</span><span class="fl-val">${fmt(r.monthlyFixed)} 元/月 <span style="font-weight:400;color:var(--text-mid)">（人工${fmt(r.laborTotal)} + 房租${fmt(state.rent)} + 水电${fmt(state.utilities)} + 折旧${fmt2(r.monthDepreciation)} + 推广${fmt(state.promo)}）</span></span></div>
+      <div class="formula-line"><span class="fl-label">变动成本率</span><span class="fl-val">物料${state.materialRate}% ${state.onlinePct>0?'+ 平台'+(state.onlinePct*state.platformFee/100).toFixed(1)+'%':''} ${r.deliveryRate>0?'+ 配送'+(r.deliveryRate*100).toFixed(1)+'%':''} = ${pctStr}%</span></div>
+      <div class="formula-line"><span class="fl-label">预估月收入</span><span class="fl-val">${fmt(r.monthlyRevenue)} 元</span></div>
+      <div class="formula-line"><span class="fl-label">月净利润</span><span class="fl-val" style="font-weight:700">${r.monthlyProfit>=0?'+':''}${fmt(r.monthlyProfit)} 元</span></div>
+    </div>
+
+    <!-- 防坑建议 -->
+    <div class="pitfalls" id="pitfallBlock">
+      <h3>🛡️ 防坑建议清单</h3>
+      <ul>${pitfalls.map(p=>`<li class="${p.type}">${p.msg}</li>`).join('')}</ul>
+    </div>
+  `;
+}
+
+// ─── 生成PNG卡片（Canvas）─────────────────────────────
+function downloadCard(){
+  const r = state.result;
+  if(!r) return;
+  const t = state.template;
+  const pitfalls = genPitfalls(r, t);
+
+  // 创建 canvas
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const w = 520, h = 820;
+  canvas.width = w * 2; canvas.height = h * 2;
+  ctx.scale(2,2);
+  ctx.textBaseline = 'top';
+
+  // 背景
+  ctx.fillStyle = '#faf7f2';
+  ctx.fillRect(0,0,w,h);
+
+  // 头部色块
+  const heroY = 0;
+  let heroColor, heroText, heroAmount;
+  if(r.monthlyProfit<0){ heroColor='#fdeeeb'; heroText='🔴 月度亏损'; heroAmount=`${Math.round(r.monthlyProfit)}元/月`; }
+  else if(r.monthlyProfit<state.expectedSalary){ heroColor='#fef6e8'; heroText='⚠️ 月度微利'; heroAmount=`+${Math.round(r.monthlyProfit)}元/月`; }
+  else { heroColor='#e8f6ef'; heroText='✅ 月度盈利'; heroAmount=`+${Math.round(r.monthlyProfit)}元/月`; }
+
+  ctx.fillStyle = heroColor;
+  roundRect(ctx,12,12,w-24,90,12);
+  ctx.fill();
+  ctx.fillStyle = '#2d2a26';
+  ctx.font = 'bold 28px sans-serif';
+  ctx.fillText(heroAmount, 30, 32);
+  ctx.fillStyle = '#7a756e';
+  ctx.font = '14px sans-serif';
+  ctx.fillText(t.icon+' '+t.name+' · '+heroText, 30, 72);
+
+  // 标题
+  ctx.fillStyle = '#2d2a26';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('📊 小生意防坑盈亏计算器', 30, 120);
+
+  // 关键指标
+  const metricsY = 155;
+  const items = [
+    ['月收入', Math.round(r.monthlyRevenue).toLocaleString()+'元'],
+    ['月净利', (r.monthlyProfit>=0?'+':'')+Math.round(r.monthlyProfit).toLocaleString()+'元'],
+    ['回本周期', r.paybackMonths===Infinity?'—':r.paybackMonths+'个月'],
+    ['净利润率', r.profitMargin.toFixed(1)+'%'],
+  ];
+  ctx.font = '12px sans-serif';
+  const iw = (w-60)/4;
+  items.forEach(([label,val],i)=>{
+    const x = 30 + i*iw;
+    ctx.fillStyle = '#b0aba3';
+    ctx.fillText(label, x, metricsY);
+    ctx.fillStyle = '#2d2a26';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.fillText(val, x, metricsY+18);
+    ctx.font = '12px sans-serif';
+  });
+
+  // 分割线
+  ctx.strokeStyle = '#e8e3dd';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(30, metricsY+50); ctx.lineTo(w-30, metricsY+50); ctx.stroke();
+
+  // 防坑建议
+  const pitY = metricsY+65;
+  ctx.fillStyle = '#2d2a26';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('🛡️ 防坑建议', 30, pitY);
+
+  ctx.font = '12px sans-serif';
+  pitfalls.slice(0,5).forEach((p,i)=>{
+    const y = pitY + 26 + i*38;
+    ctx.fillStyle = p.type==='danger'?'#fdeeeb':(p.type==='warn'?'#fef9ed':'#e8f6ef');
+    roundRect(ctx,30,y,w-60,32,6);
+    ctx.fill();
+    ctx.fillStyle = p.type==='danger'?'#d65a4a':(p.type==='warn'?'#e8842a':'#2e9a6a');
+    ctx.font = '12px sans-serif';
+    const icon = p.type==='danger'?'🔴':(p.type==='warn'?'🟠':'🟢');
+    ctx.fillText(icon+' '+p.msg.slice(0,28)+(p.msg.length>28?'...':''), 40, y+8);
+  });
+
+  // 底部
+  ctx.fillStyle = '#b0aba3';
+  ctx.font = '10px sans-serif';
+  ctx.fillText('本工具为模拟估算与创业常识教育目的，不构成投资建议。', 30, h-35);
+  ctx.fillText('X-FMS · 小生意创业防坑盈亏计算器 v1.0', 30, h-18);
+
+  // 导出
+  const link = document.createElement('a');
+  link.download = `创业防坑盈亏_${t.name}_${new Date().toISOString().slice(0,10)}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ─── 工具：圆角矩形 ────────────────────────────────────
+function roundRect(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y);
+  ctx.quadraticCurveTo(x+w,y,x+w,y+r);
+  ctx.lineTo(x+w,y+h-r);
+  ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  ctx.lineTo(x+r,y+h);
+  ctx.quadraticCurveTo(x,y+h,x,y+h-r);
+  ctx.lineTo(x,y+r);
+  ctx.quadraticCurveTo(x,y,x+r,y);
+  ctx.closePath();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  步骤导航
+// ═══════════════════════════════════════════════════════════════
+
+function goToStep(n){
+  if(n<0||n>4) return;
+  state.currentStep = n;
+  document.querySelectorAll('.step').forEach(el=>el.classList.toggle('active',parseInt(el.dataset.step)===n));
+  document.querySelectorAll('.step-item').forEach((el,i)=>{
+    el.classList.toggle('active',i===n);
+    el.classList.toggle('done',i<n);
+  });
+  prevBtn.style.display = n===0?'none':'block';
+  nextBtn.textContent = n===4?'🔄 重新计算':'下一步 →';
+  checkNextable();
+  if(n===4) renderReport();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+prevBtn.addEventListener('click',()=>goToStep(state.currentStep-1));
+nextBtn.addEventListener('click',()=>{
+  if(state.currentStep===4){ goToStep(0); return; }
+  goToStep(state.currentStep+1);
+});
+
+// ─── 帮助弹窗 ──────────────────────────────────────────
+document.addEventListener('click',e=>{
+  const help = e.target.closest('.help');
+  if(!help) return;
+  const key = help.dataset.key;
+  let tipText = '';
+  if(key==='depreciation') tipText = TIPS.depreciation;
+  else if(key==='transfer') tipText = TIPS.transfer;
+  else if(key==='bossWage') tipText = TIPS.bossWage;
+  else if(key==='material') tipText = TIPS.material;
+  else if(key==='platform') tipText = TIPS.platform;
+  else if(key==='accountPeriod') tipText = TIPS.accountPeriod;
+  else if(key==='safety') tipText = TIPS.safety;
+  else tipText = '参考行业通用数据，可根据实际情况调整。';
+  helpBox.innerHTML = `<h3>💡 提示</h3><p>${tipText}</p><button class="close" id="helpClose">知道了</button>`;
+  helpPop.classList.add('show');
+});
+helpPop.addEventListener('click',e=>{ if(e.target===helpPop) helpPop.classList.remove('show'); });
+document.addEventListener('click',e=>{
+  if(e.target.id==='helpClose') helpPop.classList.remove('show');
+});
+
+// ─── 城市等级切换 ──────────────────────────────────────
+$('cityTier').addEventListener('change',function(){
+  state.cityTier = parseInt(this.value);
+  const cc = CITY_COEFF[state.cityTier];
+  $('cityBadge').textContent = cc.label.slice(0,6);
+  if(state.template){ applyDefaults(state.template); renderStep1(); renderStep2(); renderStep3(); }
+});
+$('cityBadge').textContent = CITY_COEFF[2].label.slice(0,6);
+
+// ─── 行业反馈弹窗 ──────────────────────────────────────
+function openFeedback(){ $('feedbackModal').classList.add('show'); }
+function closeFeedback(){ $('feedbackModal').classList.remove('show'); }
+function submitFeedback(){
+  const val = $('newIndustryInput').value.trim();
+  if(!val) return alert('请填写行业名称');
+  // 提交到反馈接口（默认无后端，仅前端提示）
+  const data = { industry: val, timestamp: new Date().toISOString() };
+  // 如果有后端接口，替换下面URL：
+  const FEEDBACK_URL = ''; // 填入你的云函数地址
+  if(FEEDBACK_URL){
+    fetch(FEEDBACK_URL, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    }).then(r=>{ if(!r.ok) throw Error(); })
+  }
+  alert('感谢反馈！我们会尽快考虑添加。');
+  closeFeedback();
+  $('newIndustryInput').value = '';
+}
+// 点击弹窗背景关闭
+$('feedbackModal').addEventListener('click',e=>{ if(e.target===$('feedbackModal')) closeFeedback(); });
+
+// ─── 下载按钮 ──────────────────────────────────────────
+$('dlBtn').addEventListener('click',downloadCard);
+
+// ─── 初始化 ─────────────────────────────────────────────
+renderTemplates();
+goToStep(0);
+</script>
+</body>
+</html>
